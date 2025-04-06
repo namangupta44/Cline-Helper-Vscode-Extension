@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--
+        Use a content security policy to only allow loading styles from our extension directory,
+        and only allow scripts that have a specific nonce.
+        Also allow drag and drop data transfer.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${styleUri}" rel="stylesheet">
+    <title>File Path Collector</title>
+</head>
+<body>
+    <h1>File Path Collector</h1>
+
+    <div id="drop-zone">
+        <p>Drag files or folders here</p>
+    </div>
+
+    <h2>Collected Paths:</h2>
+    <textarea id="collected-paths" rows="15" readonly></textarea>
+
+    <button id="copy-button">Copy Collected Paths</button>
+    <button id="clear-collector-button">Clear List</button> <!-- Added Clear button -->
+
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>

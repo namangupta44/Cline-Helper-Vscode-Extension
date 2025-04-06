@@ -1,0 +1,33 @@
+body {
+    padding: 10px;
+    color: var(--vscode-editor-foreground); /* Use VS Code's theme color */
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+}
+
+button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border, var(--vscode-button-background)); /* Use border if defined, else background */
+    cursor: pointer;
+    text-align: center;
+}
+
+button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
+    font-family: var(--vscode-editor-font-family); /* Use editor font for monospace */
+    font-size: var(--vscode-editor-font-size);
+}

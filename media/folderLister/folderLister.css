@@ -1,0 +1,60 @@
+body {
+    padding: 15px;
+    color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+}
+
+h1, h2 {
+    color: var(--vscode-textLink-foreground); /* Use a slightly different color for headers */
+    border-bottom: 1px solid var(--vscode-editorWidget-border);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+/* Updated ID selector */
+#drop-zone-lister {
+    border: 2px dashed var(--vscode-editorWidget-border);
+    padding: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    background-color: var(--vscode-editorWidget-background);
+    transition: background-color 0.2s ease;
+}
+
+/* Updated ID selector */
+#drop-zone-lister.drag-over {
+    background-color: var(--vscode-list-activeSelectionBackground); /* Highlight when dragging over */
+    border-color: var(--vscode-list-activeSelectionForeground);
+}
+
+/* Updated ID selector */
+#drop-zone-lister p {
+    margin: 0;
+    color: var(--vscode-descriptionForeground);
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+}
+
+button {
+    padding: 8px 15px;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
+    cursor: pointer;
+    text-align: center;
+}
+
+button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
