@@ -24,9 +24,41 @@ button:hover {
     background-color: var(--vscode-button-hoverBackground);
 }
 
-/* Specific button adjustments if needed, but removing custom backgrounds for now */
-/* #open-collector-button { ... } */
-/* #open-lister-button { ... } */
+/* Specific button adjustments if needed */
+/* Green for Copy button */
+#copy-list-button {
+    background-color: mediumseagreen;
+    border-color: mediumseagreen;
+    color: white;
+}
+#copy-list-button:hover {
+    background-color: seagreen;
+    border-color: seagreen;
+}
+
+/* Red for Clear button */
+#clear-list-button {
+    background-color: indianred;
+    border-color: indianred;
+    color: white;
+}
+#clear-list-button:hover {
+    background-color: firebrick;
+    border-color: firebrick;
+}
+
+/* Button Group Layout */
+.button-group {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    margin-top: 5px; /* Space above button group */
+    margin-bottom: 10px; /* Space below button group */
+}
+.button-group button {
+    width: auto; /* Override any potential full-width styles */
+    margin-bottom: 0; /* Remove bottom margin for buttons inside the group */
+}
+
 
 textarea {
     display: block;

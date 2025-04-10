@@ -52,8 +52,11 @@ copyButton.addEventListener('click', () => {
 clearButton.addEventListener('click', () => {
     searchInput.value = '';
     resultsArea.value = '';
-    // Optionally, send a message to backend if needed, but likely not required for clear
-    // vscode.postMessage({ command: 'clear' });
+    matchCaseCheckbox.checked = false; // Also reset checkbox
+    // Notify the backend provider that the state has been cleared
+    vscode.postMessage({ command: 'clearSearch' });
+    // Trigger a search with empty term to clear results in backend state as well
+    performSearch();
 });
 
 // Allow searching by pressing Enter in the input field - REMOVED
@@ -75,6 +78,11 @@ window.addEventListener('message', event => {
             // Results are now expected as a pre-formatted string
             resultsArea.value = message.results;
             break;
+        case 'restoreState':
+            searchInput.value = message.term || '';
+            matchCaseCheckbox.checked = message.matchCase || false;
+            resultsArea.value = message.results || '';
+            break;
         // Add other cases if needed for feedback, e.g., copy confirmation
         case 'copySuccess':
             // Maybe show a temporary confirmation message
@@ -82,3 +90,6 @@ window.addEventListener('message', event => {
             break;
     }
 });
+
+// Request initial state when the webview loads (optional, but good practice)
+// vscode.postMessage({ command: 'requestInitialState' }); // Provider now sends it automatically on resolve

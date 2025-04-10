@@ -7,6 +7,7 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
     public static readonly viewType = 'list-open-files-view';
 
     private _view?: vscode.WebviewView;
+    private lastFileList: string = ''; // To store the last known list
 
     constructor(
         private readonly _extensionUri: vscode.Uri
@@ -26,6 +27,16 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+        // Remove state restoration from here
+
+        // Add listener for visibility changes
+        webviewView.onDidChangeVisibility(() => {
+            if (webviewView.visible) {
+                // Restore the last known list when the view becomes visible again
+                webviewView.webview.postMessage({ command: 'updateList', text: this.lastFileList });
+            }
+        });
+
         webviewView.webview.onDidReceiveMessage(message => {
             switch (message.command) {
                 case 'getOpenFiles': // Renamed command for clarity
@@ -36,13 +47,28 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
                     // Execute the new combined command
                     vscode.commands.executeCommand('get-open-files.openFileAndFolderCollector');
                     return;
+                case 'copyList':
+                    if (this.lastFileList) {
+                        vscode.env.clipboard.writeText(this.lastFileList);
+                        // Optional: Send feedback to webview
+                        // webviewView.webview.postMessage({ command: 'copySuccess' });
+                    }
+                    return;
+                case 'clearList':
+                    this.lastFileList = ''; // Clear the stored state
+                    // Update the webview immediately
+                    webviewView.webview.postMessage({ command: 'updateList', text: '' });
+                    // Optional: Send feedback to webview
+                    // webviewView.webview.postMessage({ command: 'clearSuccess' });
+                    return;
             }
         });
     }
 
     public updateFileList(fileList: string) {
+        this.lastFileList = fileList; // Store the list before sending
         if (this._view) {
-            this._view.webview.postMessage({ command: 'updateList', text: fileList });
+            this._view.webview.postMessage({ command: 'updateList', text: this.lastFileList });
         }
     }
 
@@ -64,6 +90,10 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
             <body>
                 <button id="get-files-button">Get Open File List</button> <!-- Updated text -->
                 <textarea id="file-list" rows="8" readonly></textarea> <!-- Reduced rows slightly -->
+                <div class="button-group"> <!-- Add button group -->
+                    <button id="copy-list-button">Copy</button>
+                    <button id="clear-list-button">Clear</button>
+                </div>
                 <hr>
                 <button id="open-combined-button">Open File & Folder Collector</button> <!-- Single combined button -->
 

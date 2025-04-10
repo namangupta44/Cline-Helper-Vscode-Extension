@@ -7,6 +7,9 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 
     private _view?: vscode.WebviewView;
     private readonly _extensionUri: vscode.Uri;
+    private lastSearchTerm: string = '';
+    private lastMatchCase: boolean = false;
+    private lastResults: string = '';
 
     constructor(extensionUri: vscode.Uri) {
         this._extensionUri = extensionUri;
@@ -26,14 +29,32 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+        // Remove state restoration from here
+
+        // Add listener for visibility changes
+        webviewView.onDidChangeVisibility(() => {
+            if (webviewView.visible) {
+                // Restore previous state when view becomes visible again
+                webviewView.webview.postMessage({
+                    command: 'restoreState',
+                    term: this.lastSearchTerm,
+                    matchCase: this.lastMatchCase,
+                    results: this.lastResults
+                });
+            }
+        });
+
         webviewView.webview.onDidReceiveMessage(async message => {
             switch (message.command) {
                 case 'search':
                     const searchTerm = message.term;
                     const matchCase = message.matchCase ?? false; // Default to false if not provided
-                    if (searchTerm) {
-                        await this.performSearch(searchTerm, matchCase);
-                    }
+                    // Store the search term and match case state immediately
+                    this.lastSearchTerm = searchTerm;
+                    this.lastMatchCase = matchCase;
+                    // Perform the search (this will update lastResults internally)
+                    await this.performSearch(searchTerm, matchCase);
+                    // No need to check if searchTerm is empty here, performSearch handles it
                     return;
                 case 'copy':
                     const textToCopy = message.text;
@@ -42,13 +63,35 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                         webviewView.webview.postMessage({ command: 'copySuccess' });
                     }
                     return;
+                case 'clearSearch': // Handle message from webview clear button
+                    this.lastSearchTerm = '';
+                    this.lastMatchCase = false;
+                    this.lastResults = '';
+                    // Optional: If you want to ensure the view is cleared even if the user didn't clear it
+                    // webviewView.webview.postMessage({ command: 'updateResults', results: '' });
+                    return;
+
             }
         });
     }
 
     private async performSearch(term: string, matchCase: boolean) {
-        if (!this._view || !vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
-            this._view?.webview.postMessage({ command: 'updateResults', results: "No workspace open." });
+        // Update state variables even before the search starts
+        this.lastSearchTerm = term;
+        this.lastMatchCase = matchCase;
+
+        if (!this._view) { return; } // View not ready
+
+        if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+            this.lastResults = "No workspace open.";
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
+            return;
+        }
+
+        // If search term is empty, clear results and state
+        if (!term) {
+            this.lastResults = '';
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
             return;
         }
 
@@ -76,12 +119,14 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                 resultsString = "No matching files or folders found.";
             }
 
-            this._view.webview.postMessage({ command: 'updateResults', results: resultsString });
+            this.lastResults = resultsString; // Store the results
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
 
         } catch (error) {
             console.error("Error during file search:", error);
             vscode.window.showErrorMessage(`Error searching files: ${error}`);
-            this._view.webview.postMessage({ command: 'updateResults', results: "Error during search." });
+            this.lastResults = "Error during search."; // Store error state
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
         }
     }
 
