@@ -45,9 +45,8 @@ This extension provides several tools for gathering file and folder paths within
 
 *   **Access:** Click the list icon (`$(list-unordered)`) in the Activity Bar on the far left. This opens the "Open Files List" container in the sidebar, where the "File Name Searcher" view is located.
 *   **Functionality:**
-    *   Enter a part of a file or folder name into the input box.
-    *   Optionally, check the "Match Case" box for case-sensitive searching (default is case-insensitive).
-    *   Click the "Search" button (or press Enter in the input box).
+    *   Enter a part of a file or folder name into the input box. The search will begin automatically as you type (after a brief pause).
+    *   Optionally, check the "Match Case" box for case-sensitive searching (default is case-insensitive). Changing this checkbox also triggers a new search.
     *   The text area below will be populated with the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
     *   Results are prefixed with `@/` and separated into `--- Folders ---` and `--- Files ---` sections.
     *   Click the "Copy All" button to copy the entire results list to your clipboard.

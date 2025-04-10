@@ -179,8 +179,7 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                          <input type="checkbox" id="match-case-checkbox"> Match Case
                      </label>
                      <div style="display: flex; gap: 5px; margin-top: 5px;">
-                          <button id="search-button" style="flex-grow: 1;">Search</button>
-                          <button id="clear-button" style="flex-grow: 1;">Clear</button>
+                          <button id="clear-button">Clear</button>
                      </div>
 
                     <div id="results-container">

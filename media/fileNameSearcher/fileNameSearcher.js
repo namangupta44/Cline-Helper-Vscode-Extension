@@ -1,25 +1,43 @@
 // @ts-ignore because vscode-webview-ui-toolkit is not available in this context
+// @ts-ignore because vscode-webview-ui-toolkit is not available in this context
 const vscode = acquireVsCodeApi();
 
 const searchInput = document.getElementById('search-input');
 const matchCaseCheckbox = document.getElementById('match-case-checkbox'); // Get checkbox
-const searchButton = document.getElementById('search-button');
+// const searchButton = document.getElementById('search-button'); // Removed
 const clearButton = document.getElementById('clear-button');
 const resultsArea = document.getElementById('results-area');
 const copyButton = document.getElementById('copy-button');
 
+// --- Debounce Function ---
+let debounceTimer;
+function debounce(func, delay) {
+    return function(...args) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
+
+// --- Search Function ---
+function performSearch() {
+    const searchTerm = searchInput.value;
+    // Trigger search even if the term is empty, allowing the backend to clear results or show all
+    vscode.postMessage({
+        command: 'search',
+        term: searchTerm,
+        matchCase: matchCaseCheckbox.checked // Send checkbox state
+    });
+}
+
+// Debounced search trigger
+const debouncedSearch = debounce(performSearch, 300); // 300ms delay
+
 // --- Event Listeners ---
 
-searchButton.addEventListener('click', () => {
-    const searchTerm = searchInput.value;
-    if (searchTerm) {
-        vscode.postMessage({
-            command: 'search',
-            term: searchTerm,
-            matchCase: matchCaseCheckbox.checked // Send checkbox state
-        });
-    }
-});
+searchInput.addEventListener('input', debouncedSearch); // Trigger search on input change
+matchCaseCheckbox.addEventListener('change', performSearch); // Trigger search immediately on checkbox change
 
 copyButton.addEventListener('click', () => {
     const results = resultsArea.value;
@@ -38,13 +56,13 @@ clearButton.addEventListener('click', () => {
     // vscode.postMessage({ command: 'clear' });
 });
 
-// Allow searching by pressing Enter in the input field
-searchInput.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent default form submission if it were in a form
-        searchButton.click(); // Trigger the search button click
-    }
-});
+// Allow searching by pressing Enter in the input field - REMOVED
+// searchInput.addEventListener('keypress', (event) => {
+//     if (event.key === 'Enter') {
+//         event.preventDefault(); // Prevent default form submission if it were in a form
+//         searchButton.click(); // Trigger the search button click - REMOVED
+//     }
+// });
 
 
 // --- Message Handling ---
