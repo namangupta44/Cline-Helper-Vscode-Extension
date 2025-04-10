@@ -18,10 +18,10 @@ This extension provides several tools for gathering file and folder paths within
 *   **Access:**
     *   Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P) and run "Open File and Folder Collector".
     *   Alternatively, click the "Open File & Folder Collector" button in the sidebar panel (Feature 1).
-*   **Functionality:**
+    *   **Functionality:**
     *   A new editor tab titled "File and Folder Collector" opens, displaying two sections side-by-side.
     *   **Left Section (Collect Paths):**
-        *   Drag files and/or folders from VS Code's Explorer or your operating system onto the "Drag files or folders here" area.
+        *   Drag files and/or folders from VS Code's Explorer, your operating system, **or directly from an open editor tab** onto the "Drag files or folders here" area.
         *   The relative paths of the dropped items (prefixed with `@/`) are added to the "Collected Paths" text area below. Duplicates are automatically ignored.
         *   Click "Copy Collected" to copy the collected list.
         *   Click "Clear Collected" to reset the collected list.

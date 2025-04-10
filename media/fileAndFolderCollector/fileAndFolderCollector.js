@@ -50,17 +50,32 @@
             dropZone.classList.remove('drag-over');
 
             if (event.dataTransfer) {
-                const uriList = event.dataTransfer.getData('text/uri-list');
+                let uriList = null;
+                // Prioritize the VS Code specific type for editor tab drags
+                if (event.dataTransfer.types.includes('application/vnd.code.uri-list')) {
+                    uriList = event.dataTransfer.getData('application/vnd.code.uri-list');
+                    console.log("Processing 'application/vnd.code.uri-list'");
+                }
+                // Fallback to the standard type for file/folder drags from explorer/OS
+                else if (event.dataTransfer.types.includes('text/uri-list')) {
+                    uriList = event.dataTransfer.getData('text/uri-list');
+                    console.log("Processing 'text/uri-list'");
+                }
+
                 if (uriList) {
                     const uris = uriList.split('\n')
                                         .map(uri => uri.trim())
-                                        .filter(uri => uri && !uri.startsWith('#'));
+                                        .filter(uri => uri && !uri.startsWith('#')); // Filter out empty lines/comments
                     if (uris.length > 0) {
                         vscode.postMessage({ command: commandToSend, uris: uris });
+                    } else {
+                        console.warn("URI list was empty after filtering.");
                     }
                 } else {
-                    console.warn("Could not get 'text/uri-list'. Drag data:", event.dataTransfer.items);
+                    console.warn("Could not find 'application/vnd.code.uri-list' or 'text/uri-list' in dataTransfer types:", event.dataTransfer.types);
                 }
+            } else {
+                console.warn("No dataTransfer object found in drop event.");
             }
         });
     }
