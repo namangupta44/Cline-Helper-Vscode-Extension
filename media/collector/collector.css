@@ -3,6 +3,7 @@ body {
     color: var(--vscode-editor-foreground);
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
+    background-color: rgba(173, 216, 230, 0.3); /* Light Blue background tint (Increased Opacity) */
 }
 
 h1, h2 {

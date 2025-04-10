@@ -3,6 +3,7 @@ body {
     color: var(--vscode-editor-foreground);
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
+    background-color: rgba(144, 238, 144, 0.1); /* Light Green background tint */
 }
 
 h1, h2 {

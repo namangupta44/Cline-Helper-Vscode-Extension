@@ -21,6 +21,26 @@ button:hover {
     background-color: var(--vscode-button-hoverBackground);
 }
 
+/* Style for the collector button */
+#open-collector-button {
+    background-color: rgba(173, 216, 230, 0.5); /* Light Blue tint (Increased Opacity) */
+    border-color: rgba(173, 216, 230, 0.7); /* Adjusted border slightly */
+}
+
+#open-collector-button:hover {
+    background-color: rgba(173, 216, 230, 0.7); /* Darker blue on hover (Increased Opacity) */
+}
+
+/* Style for the lister button */
+#open-lister-button {
+    background-color: rgba(144, 238, 144, 0.3); /* Light Green tint */
+    border-color: rgba(144, 238, 144, 0.5);
+}
+
+#open-lister-button:hover {
+    background-color: rgba(144, 238, 144, 0.5); /* Darker green on hover */
+}
+
 textarea {
     display: block;
     width: 100%;
