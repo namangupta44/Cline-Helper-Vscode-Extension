@@ -32,13 +32,9 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
                     // Use the new command name
                     vscode.commands.executeCommand('get-open-files.listOpen');
                     return;
-                case 'openCollector':
-                    // Command to open the collector tab (will be defined in extension.ts)
-                    vscode.commands.executeCommand('get-open-files.openCollectorTab');
-                    return;
-                case 'openFolderLister': // Added case for the new button
-                    // Command to open the folder lister tab
-                    vscode.commands.executeCommand('get-open-files.openFolderListerTab');
+                case 'openCombinedCollector': // New message command from the single button
+                    // Execute the new combined command
+                    vscode.commands.executeCommand('get-open-files.openFileAndFolderCollector');
                     return;
             }
         });
@@ -69,8 +65,7 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
                 <button id="get-files-button">Get Open File List</button> <!-- Updated text -->
                 <textarea id="file-list" rows="8" readonly></textarea> <!-- Reduced rows slightly -->
                 <hr>
-                <button id="open-collector-button">Open File Collector Tab</button>
-                <button id="open-lister-button">Open Folder Lister Tab</button> <!-- Added third button -->
+                <button id="open-combined-button">Open File & Folder Collector</button> <!-- Single combined button -->
 
                 <script nonce="${nonce}" src="${scriptUri}"></script>
             </body>

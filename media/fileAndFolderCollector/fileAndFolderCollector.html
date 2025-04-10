@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--
+        Use a content security policy to only allow loading styles from our extension directory,
+        and only allow scripts that have a specific nonce.
+        Also allow drag and drop data transfer.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${styleUri}" rel="stylesheet">
+    <title>File and Folder Collector</title>
+</head>
+<body>
+    <h1>File and Folder Collector</h1>
+
+    <div id="main-container">
+        <!-- Section 1: File Path Collector -->
+        <div id="collector-section" class="collector-lister-section">
+            <h2>Collect File/Folder Paths</h2>
+            <div id="drop-zone-collector" class="drop-zone">
+                <p>Drag files or folders here</p>
+            </div>
+            <h3>Collected Paths:</h3>
+            <textarea id="collected-paths" rows="15" readonly></textarea>
+            <button id="copy-collector-button">Copy Collected</button>
+            <button id="clear-collector-button">Clear Collected</button>
+        </div>
+
+        <!-- Section 2: Folder Content Lister -->
+        <div id="lister-section" class="collector-lister-section">
+            <h2>List Folder Contents</h2>
+            <div id="drop-zone-lister" class="drop-zone">
+                <p>Drag folders here to list contents</p>
+            </div>
+            <h3>Listed File Paths:</h3>
+            <textarea id="listed-paths" rows="15" readonly></textarea>
+            <button id="copy-lister-button">Copy Listed</button>
+            <button id="clear-lister-button">Clear Listed</button>
+        </div>
+    </div>
+
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>

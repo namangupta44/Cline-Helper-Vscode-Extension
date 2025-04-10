@@ -33,21 +33,14 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	// --- Feature B: File Path Collector (Editor Tab) ---
+	// --- Combined File and Folder Collector (Editor Tab) ---
 	context.subscriptions.push(
-		vscode.commands.registerCommand('get-open-files.openCollectorTab', () => {
-			createCollectorPanel(context); // Use helper function
+		vscode.commands.registerCommand('get-open-files.openFileAndFolderCollector', () => {
+			createFileAndFolderCollectorPanel(context); // Use new helper function
 		})
 	);
 
-	// --- Feature C: Folder Content Lister (Editor Tab) ---
-	context.subscriptions.push(
-		vscode.commands.registerCommand('get-open-files.openFolderListerTab', () => {
-			createFolderListerPanel(context); // Use helper function
-		})
-	);
-
-	// --- Feature D: File Name Searcher (Sidebar) ---
+	// --- File Name Searcher (Sidebar) ---
 	const fileNameSearcherProvider = new FileNameSearcherWebViewProvider(context.extensionUri);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(FileNameSearcherWebViewProvider.viewType, fileNameSearcherProvider)
@@ -63,27 +56,37 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-// --- Helper Function for Collector Panel (Feature B) ---
-function createCollectorPanel(context: vscode.ExtensionContext) {
+// --- Helper Function for Combined File and Folder Collector Panel ---
+function createFileAndFolderCollectorPanel(context: vscode.ExtensionContext) {
 	const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 	const panel = vscode.window.createWebviewPanel(
-		'filePathCollector', 'File Path Collector', column || vscode.ViewColumn.One,
+		'fileAndFolderCollector', // Panel ID
+		'File and Folder Collector', // Title
+		column || vscode.ViewColumn.One,
 		{
 			enableScripts: true,
-			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media', 'collector')],
-			retainContextWhenHidden: true // Add this line
+			// Update resource root to the new directory
+			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media', 'fileAndFolderCollector')],
+			retainContextWhenHidden: true
 		}
 	);
 
-	const collectedPaths = new Set<string>();
-	panel.webview.html = getWebviewHtml(panel.webview, context.extensionUri, 'collector');
+	// State variables for both sides
+	const collectedPaths = new Set<string>(); // For collector side
+	let listedContent = ""; // For lister side (full string)
+	const listedUniquePaths = new Set<string>(); // For lister side (unique paths)
 
+	// Load the new combined HTML
+	panel.webview.html = getWebviewHtml(panel.webview, context.extensionUri, 'fileAndFolderCollector');
+
+	// Handle messages from the webview
 	panel.webview.onDidReceiveMessage(
-		message => {
+		async message => {
 			switch (message.command) {
+				// --- Collector Side Logic ---
 				case 'addPaths':
-					const uris: string[] = message.uris || [];
-					uris.forEach(uriString => {
+					const collectorUris: string[] = message.uris || [];
+					collectorUris.forEach(uriString => {
 						try {
 							const uri = vscode.Uri.parse(uriString);
 							const relativePath = vscode.workspace.asRelativePath(uri, false);
@@ -92,44 +95,19 @@ function createCollectorPanel(context: vscode.ExtensionContext) {
 					});
 					panel.webview.postMessage({ command: 'updateCollectorList', text: Array.from(collectedPaths).join('\n') });
 					return;
-				case 'copyPaths':
-					const listToCopy = Array.from(collectedPaths).join('\n');
-					if (listToCopy) {
-						vscode.env.clipboard.writeText(listToCopy);
+				case 'copyCollectorPaths':
+					const collectorListToCopy = Array.from(collectedPaths).join('\n');
+					if (collectorListToCopy) {
+						vscode.env.clipboard.writeText(collectorListToCopy);
 						vscode.window.showInformationMessage('Collected paths copied!');
 					} else { vscode.window.showWarningMessage('No paths collected.'); }
-							return;
-						case 'clearCollectorList': // Added clear handler
-							collectedPaths.clear();
-							panel.webview.postMessage({ command: 'updateCollectorList', text: '' });
-							return;
-					}
-				},
-		undefined, context.subscriptions
-	);
-	panel.onDidDispose(() => { console.log('Collector panel disposed'); }, null, context.subscriptions);
-}
+					return;
+				case 'clearCollectorList':
+					collectedPaths.clear();
+					panel.webview.postMessage({ command: 'updateCollectorList', text: '' });
+					return;
 
-// --- Helper Function for Folder Lister Panel (Feature C) ---
-function createFolderListerPanel(context: vscode.ExtensionContext) {
-	const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-	const panel = vscode.window.createWebviewPanel(
-		'folderContentLister', 'Folder Content Lister', column || vscode.ViewColumn.One,
-		{
-			enableScripts: true,
-			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media', 'folderLister')],
-			retainContextWhenHidden: true // Add this line
-		}
-	);
-
-	let collectedContent = ""; // Store the full string including separators
-	const uniquePaths = new Set<string>(); // Track unique paths across all drops
-
-	panel.webview.html = getWebviewHtml(panel.webview, context.extensionUri, 'folderLister');
-
-	panel.webview.onDidReceiveMessage(
-		async message => { // Make handler async
-			switch (message.command) {
+				// --- Lister Side Logic ---
 				case 'addFolderPaths':
 					const folderUris: string[] = message.uris || [];
 					let addedNewContentForThisDrop = false;
@@ -140,58 +118,58 @@ function createFolderListerPanel(context: vscode.ExtensionContext) {
 							const stats = await vscode.workspace.fs.stat(folderUri);
 
 							if (stats.type === vscode.FileType.Directory) {
-								const filesInDir = await findFilesInDir(folderUri); // Recursive find
+								const filesInDir = await findFilesInDir(folderUri); // Use existing helper
 								const newPathsForThisFolder: string[] = [];
 
 								filesInDir.forEach(fileUri => {
 									const relativePath = vscode.workspace.asRelativePath(fileUri, false);
 									const prefixedPath = `@/${relativePath}`;
-									if (!uniquePaths.has(prefixedPath)) {
-										uniquePaths.add(prefixedPath);
+									if (!listedUniquePaths.has(prefixedPath)) {
+										listedUniquePaths.add(prefixedPath);
 										newPathsForThisFolder.push(prefixedPath);
 									}
 								});
 
 								if (newPathsForThisFolder.length > 0) {
-									if (collectedContent !== "") { // Add separator if content exists
-										collectedContent += '\n\n'; // Add blank line separator
+									if (listedContent !== "") { // Add separator if content exists
+										listedContent += '\n\n'; // Add blank line separator
 									}
-									collectedContent += newPathsForThisFolder.join('\n');
+									listedContent += newPathsForThisFolder.join('\n');
 									addedNewContentForThisDrop = true;
 								}
 							} else {
-								// Handle dropped files like the collector (optional, or ignore)
-								// For now, we only process directories in this panel
-								console.log("Folder Lister ignoring non-directory:", uriString);
+								console.log("Lister ignoring non-directory:", uriString);
 							}
-						} catch (e) { console.error("Folder Lister: Error processing URI:", uriString, e); }
+						} catch (e) { console.error("Lister: Error processing URI:", uriString, e); }
 					}
 
-					// Send full updated list back only if new content was added
 					if (addedNewContentForThisDrop) {
-						panel.webview.postMessage({ command: 'updateListerContent', text: collectedContent });
+						// Use the new command name for updating the lister text area
+						panel.webview.postMessage({ command: 'updateListerList', text: listedContent });
 					}
 					return;
 
-				case 'copyListedPaths':
-					if (collectedContent) {
-						vscode.env.clipboard.writeText(collectedContent);
+				case 'copyListerPaths':
+					if (listedContent) {
+						vscode.env.clipboard.writeText(listedContent);
 						vscode.window.showInformationMessage('Listed paths copied!');
 					} else { vscode.window.showWarningMessage('No paths listed.'); }
-							return;
-						case 'clearListerList': // Added clear handler
-							uniquePaths.clear();
-							collectedContent = "";
-							panel.webview.postMessage({ command: 'updateListerContent', text: '' });
-							return;
-					}
-				},
+					return;
+				case 'clearListerList':
+					listedUniquePaths.clear();
+					listedContent = "";
+					panel.webview.postMessage({ command: 'updateListerList', text: '' });
+					return;
+			}
+		},
 		undefined, context.subscriptions
 	);
-	panel.onDidDispose(() => { console.log('Folder Lister panel disposed'); }, null, context.subscriptions);
+
+	panel.onDidDispose(() => { console.log('File and Folder Collector panel disposed'); }, null, context.subscriptions);
 }
 
-// --- Recursive File Finder ---
+
+// --- Recursive File Finder (Remains the same) ---
 async function findFilesInDir(dirUri: vscode.Uri): Promise<vscode.Uri[]> {
     let files: vscode.Uri[] = [];
     try {
@@ -213,11 +191,13 @@ async function findFilesInDir(dirUri: vscode.Uri): Promise<vscode.Uri[]> {
 
 
 // --- Generic Helper function to get HTML for Webview Panels ---
-function getWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, featureName: 'collector' | 'folderLister'): string {
+// Updated to handle the new combined feature name
+function getWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, featureName: 'fileAndFolderCollector'): string {
 	const htmlPath = vscode.Uri.joinPath(extensionUri, 'media', featureName, `${featureName}.html`);
 	const scriptPath = vscode.Uri.joinPath(extensionUri, 'media', featureName, `${featureName}.js`);
 	const stylePath = vscode.Uri.joinPath(extensionUri, 'media', featureName, `${featureName}.css`);
 
+	// Ensure URIs are generated correctly for the webview
 	const scriptUri = webview.asWebviewUri(scriptPath);
 	const styleUri = webview.asWebviewUri(stylePath);
 	const nonce = getNonce();

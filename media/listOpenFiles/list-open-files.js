@@ -4,8 +4,7 @@
 
     const getFilesButton = document.getElementById('get-files-button');
     const fileListTextArea = document.getElementById('file-list');
-    const openCollectorButton = document.getElementById('open-collector-button');
-    const openListerButton = document.getElementById('open-lister-button'); // Get the third button
+    const openCombinedButton = document.getElementById('open-combined-button'); // Get the new combined button
 
     // Handle "Get Open File List" button click
     getFilesButton.addEventListener('click', () => {
@@ -14,17 +13,10 @@
         });
     });
 
-    // Handle "Open Collector Tab" button click
-    openCollectorButton.addEventListener('click', () => {
+    // Handle "Open File & Folder Collector" button click
+    openCombinedButton.addEventListener('click', () => {
         vscode.postMessage({
-            command: 'openCollector'
-        });
-    });
-
-    // Handle "Open Folder Lister Tab" button click
-    openListerButton.addEventListener('click', () => {
-        vscode.postMessage({
-            command: 'openFolderLister' // Command to open the folder lister tab
+            command: 'openCombinedCollector' // Send the new command
         });
     });
 

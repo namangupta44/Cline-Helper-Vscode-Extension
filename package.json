@@ -11,20 +11,15 @@
   ],
   "activationEvents": [
     "onView:list-open-files-view",
-    "onCommand:get-open-files.openCollectorTab",
-    "onCommand:get-open-files.openFolderListerTab",
+    "onCommand:get-open-files.openFileAndFolderCollector",
     "onView:fileNameSearcher.view"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "get-open-files.openCollectorTab",
-        "title": "Open File Path Collector"
-      },
-      {
-        "command": "get-open-files.openFolderListerTab",
-        "title": "Open Folder Content Lister"
+        "command": "get-open-files.openFileAndFolderCollector",
+        "title": "Open File and Folder Collector"
       },
       {
         "command": "fileNameSearcher.showView",

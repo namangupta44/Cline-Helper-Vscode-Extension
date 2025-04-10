@@ -3,34 +3,59 @@ body {
     color: var(--vscode-editor-foreground);
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
-    background-color: rgba(144, 238, 144, 0.1); /* Light Green background tint */
+    /* Removed specific background tints */
 }
 
-h1, h2 {
-    color: var(--vscode-textLink-foreground); /* Use a slightly different color for headers */
+h1 {
+    color: var(--vscode-textLink-foreground);
+    border-bottom: 1px solid var(--vscode-editorWidget-border);
+    padding-bottom: 5px;
+    margin-bottom: 15px; /* Increased margin */
+}
+
+h2 {
+    color: var(--vscode-textLink-foreground);
     border-bottom: 1px solid var(--vscode-editorWidget-border);
     padding-bottom: 5px;
     margin-bottom: 10px;
+    margin-top: 0; /* Remove default top margin */
 }
 
-/* Updated ID selector */
-#drop-zone-lister {
+h3 {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: var(--vscode-font-size); /* Match body font size */
+    font-weight: bold;
+}
+
+#main-container {
+    display: flex;
+    gap: 20px; /* Space between the two sections */
+}
+
+.collector-lister-section {
+    flex: 1; /* Each section takes equal width */
+    display: flex;
+    flex-direction: column; /* Stack elements vertically within each section */
+    min-width: 0; /* Prevent flex items from overflowing */
+}
+
+.drop-zone { /* Combined styles for both drop zones */
     border: 2px dashed var(--vscode-editorWidget-border);
     padding: 20px;
     margin-bottom: 15px;
     text-align: center;
     background-color: var(--vscode-editorWidget-background);
     transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Prevent drop zone from shrinking */
 }
 
-/* Updated ID selector */
-#drop-zone-lister.drag-over {
+.drop-zone.drag-over {
     background-color: var(--vscode-list-activeSelectionBackground); /* Highlight when dragging over */
     border-color: var(--vscode-list-activeSelectionForeground);
 }
 
-/* Updated ID selector */
-#drop-zone-lister p {
+.drop-zone p {
     margin: 0;
     color: var(--vscode-descriptionForeground);
 }
@@ -45,6 +70,8 @@ textarea {
     border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
     font-family: var(--vscode-editor-font-family);
     font-size: var(--vscode-editor-font-size);
+    flex-grow: 1; /* Allow textarea to grow */
+    min-height: 150px; /* Ensure a minimum height */
 }
 
 button {
@@ -54,6 +81,13 @@ button {
     border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
     cursor: pointer;
     text-align: center;
+    margin-right: 5px; /* Add some space between buttons */
+    margin-bottom: 5px; /* Add space below buttons if they wrap */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+button:last-child {
+    margin-right: 0;
 }
 
 button:hover {
