@@ -5,49 +5,47 @@ body {
     font-size: var(--vscode-font-size);
 }
 
+/* General Button Styling */
 button {
-    display: block;
-    width: 100%;
+    /* display: block; */ /* Removed to allow inline-block behavior */
+    /* width: 100%; */ /* Removed full width */
     margin-bottom: 10px;
-    padding: 5px;
+    padding: 6px 12px; /* Adjusted padding */
     background-color: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
     border: 1px solid var(--vscode-button-border, var(--vscode-button-background)); /* Use border if defined, else background */
     cursor: pointer;
     text-align: center;
+    border-radius: 3px; /* Added border radius */
+    transition: background-color 0.1s ease; /* Added transition */
 }
 
 button:hover {
     background-color: var(--vscode-button-hoverBackground);
 }
 
-/* Style for the collector button */
-#open-collector-button {
-    background-color: rgba(173, 216, 230, 0.5); /* Light Blue tint (Increased Opacity) */
-    border-color: rgba(173, 216, 230, 0.7); /* Adjusted border slightly */
-}
-
-#open-collector-button:hover {
-    background-color: rgba(173, 216, 230, 0.7); /* Darker blue on hover (Increased Opacity) */
-}
-
-/* Style for the lister button */
-#open-lister-button {
-    background-color: rgba(144, 238, 144, 0.3); /* Light Green tint */
-    border-color: rgba(144, 238, 144, 0.5);
-}
-
-#open-lister-button:hover {
-    background-color: rgba(144, 238, 144, 0.5); /* Darker green on hover */
-}
+/* Specific button adjustments if needed, but removing custom backgrounds for now */
+/* #open-collector-button { ... } */
+/* #open-lister-button { ... } */
 
 textarea {
     display: block;
     width: 100%;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    margin-bottom: 10px; /* Ensure space below textarea */
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
     border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
     font-family: var(--vscode-editor-font-family); /* Use editor font for monospace */
     font-size: var(--vscode-editor-font-size);
+    border-radius: 3px; /* Added border radius */
+    padding: 8px; /* Added padding */
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--vscode-editorWidget-border);
+    margin-top: 15px; /* Space above hr */
+    margin-bottom: 15px; /* Space below hr */
 }

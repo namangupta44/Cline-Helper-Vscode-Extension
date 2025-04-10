@@ -15,6 +15,25 @@
     const copyListerButton = document.getElementById('copy-lister-button');
     const clearListerButton = document.getElementById('clear-lister-button');
 
+    // Feedback elements
+    const collectorFeedback = document.getElementById('collector-feedback');
+    const listerFeedback = document.getElementById('lister-feedback');
+    let feedbackTimeout; // To manage clearing feedback
+
+    // --- Feedback Function ---
+    function showFeedback(element, message) {
+        clearTimeout(feedbackTimeout); // Clear any existing timeout
+        element.textContent = message;
+        element.classList.add('visible');
+
+        feedbackTimeout = setTimeout(() => {
+            element.classList.remove('visible');
+            // Optionally clear text after fade out:
+            // setTimeout(() => { element.textContent = ''; }, 300); // Match CSS transition duration
+        }, 2500); // Show feedback for 2.5 seconds
+    }
+
+
     // --- State Handling ---
     // Restore state
     const previousState = vscode.getState() || { collectedText: '', listedText: '' };
@@ -111,14 +130,30 @@
     window.addEventListener('message', event => {
         const message = event.data;
         switch (message.command) {
+            // List Updates
             case 'updateCollectorList':
                 collectedPathsTextArea.value = message.text;
-                saveState(); // Save state whenever the list is updated
+                saveState();
                 break;
-            case 'updateListerList': // Use distinct command for lister
+            case 'updateListerList':
                 listedPathsTextArea.value = message.text;
-                saveState(); // Save state whenever the list is updated
+                saveState();
                 break;
+
+            // Feedback Messages
+            case 'collectorCopySuccess':
+                showFeedback(collectorFeedback, 'Collected paths copied!');
+                break;
+            case 'collectorClearSuccess':
+                showFeedback(collectorFeedback, 'Collected list cleared.');
+                break;
+            case 'listerCopySuccess':
+                showFeedback(listerFeedback, 'Listed paths copied!');
+                break;
+            case 'listerClearSuccess':
+                showFeedback(listerFeedback, 'Listed paths cleared.');
+                break;
+            // Add cases for potential error feedback if needed
         }
     });
 

@@ -28,21 +28,65 @@ button {
     border-radius: 3px;
     cursor: pointer;
     text-align: center;
+    /* width: auto; */ /* Ensure buttons aren't forced full width by default */
+    flex-shrink: 0; /* Prevent shrinking in flex container */
+    transition: background-color 0.1s ease; /* Add transition */
 }
 
 button:hover {
     background-color: var(--vscode-button-hoverBackground);
 }
 
+/* --- Custom Button Colors --- */
+
+/* Green for Copy button */
+#copy-button {
+    background-color: mediumseagreen; /* Green */
+    border-color: mediumseagreen;
+    color: white; /* Ensure text is readable */
+}
+
+#copy-button:hover {
+    background-color: seagreen; /* Darker green on hover */
+    border-color: seagreen;
+}
+
+/* Red for Clear button */
+#clear-button {
+    background-color: indianred; /* Red */
+    border-color: indianred;
+    color: white; /* Ensure text is readable */
+}
+
+#clear-button:hover {
+    background-color: firebrick; /* Darker red on hover */
+    border-color: firebrick;
+    color: white; /* Keep text color on hover */
+}
+
 #results-container {
     margin-top: 15px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px; /* Increased gap */
 }
 
+/* Style the new button group */
+.button-group {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    margin-top: 5px; /* Space above button group */
+}
+
+/* Ensure buttons within the group don't take full width */
+.button-group button {
+    width: auto; /* Override any potential full-width styles */
+}
+
+
 #results-area {
-    width: calc(100% - 18px); /* Account for padding/border */
+    width: 100%; /* Use 100% width */
+    box-sizing: border-box; /* Include padding/border in width */
     font-family: var(--vscode-editor-font-family);
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);

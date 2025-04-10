@@ -99,12 +99,14 @@ function createFileAndFolderCollectorPanel(context: vscode.ExtensionContext) {
 					const collectorListToCopy = Array.from(collectedPaths).join('\n');
 					if (collectorListToCopy) {
 						vscode.env.clipboard.writeText(collectorListToCopy);
-						vscode.window.showInformationMessage('Collected paths copied!');
+						// vscode.window.showInformationMessage('Collected paths copied!'); // Replaced by webview feedback
+						panel.webview.postMessage({ command: 'collectorCopySuccess' }); // Send feedback
 					} else { vscode.window.showWarningMessage('No paths collected.'); }
 					return;
 				case 'clearCollectorList':
 					collectedPaths.clear();
 					panel.webview.postMessage({ command: 'updateCollectorList', text: '' });
+					panel.webview.postMessage({ command: 'collectorClearSuccess' }); // Send feedback
 					return;
 
 				// --- Lister Side Logic ---
@@ -152,13 +154,15 @@ function createFileAndFolderCollectorPanel(context: vscode.ExtensionContext) {
 				case 'copyListerPaths':
 					if (listedContent) {
 						vscode.env.clipboard.writeText(listedContent);
-						vscode.window.showInformationMessage('Listed paths copied!');
+						// vscode.window.showInformationMessage('Listed paths copied!'); // Replaced by webview feedback
+						panel.webview.postMessage({ command: 'listerCopySuccess' }); // Send feedback
 					} else { vscode.window.showWarningMessage('No paths listed.'); }
 					return;
 				case 'clearListerList':
 					listedUniquePaths.clear();
 					listedContent = "";
 					panel.webview.postMessage({ command: 'updateListerList', text: '' });
+					panel.webview.postMessage({ command: 'listerClearSuccess' }); // Send feedback
 					return;
 			}
 		},

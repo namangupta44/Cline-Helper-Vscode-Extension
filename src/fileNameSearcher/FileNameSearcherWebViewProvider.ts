@@ -175,17 +175,18 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 			<body>
                 <div class="container">
                     <input type="text" id="search-input" placeholder="Enter filename part...">
-                     <label style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
-                         <input type="checkbox" id="match-case-checkbox"> Match Case
-                     </label>
-                     <div style="display: flex; gap: 5px; margin-top: 5px;">
-                          <button id="clear-button">Clear</button>
-                     </div>
+                    <label style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                        <input type="checkbox" id="match-case-checkbox"> Match Case
+                    </label>
+                    <!-- Clear button moved below -->
 
                     <div id="results-container">
                         <h3>Results:</h3>
                         <textarea id="results-area" readonly rows="10"></textarea>
-                        <button id="copy-button">Copy All</button>
+                        <div class="button-group"> <!-- New button group -->
+                            <button id="copy-button">Copy</button>
+                            <button id="clear-button">Clear</button>
+                        </div>
                     </div>
                 </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>

@@ -3,34 +3,34 @@ body {
     color: var(--vscode-editor-foreground);
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
-    /* Removed specific background tints */
+    line-height: 1.4; /* Improve readability */
 }
 
 h1 {
     color: var(--vscode-textLink-foreground);
     border-bottom: 1px solid var(--vscode-editorWidget-border);
-    padding-bottom: 5px;
-    margin-bottom: 15px; /* Increased margin */
+    padding-bottom: 8px; /* Slightly more padding */
+    margin-bottom: 20px; /* Increased margin */
 }
 
 h2 {
     color: var(--vscode-textLink-foreground);
     border-bottom: 1px solid var(--vscode-editorWidget-border);
     padding-bottom: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* More space below H2 */
     margin-top: 0; /* Remove default top margin */
 }
 
 h3 {
-    margin-top: 15px;
-    margin-bottom: 5px;
+    margin-top: 10px; /* Reduced top margin */
+    margin-bottom: 8px; /* Increased bottom margin */
     font-size: var(--vscode-font-size); /* Match body font size */
     font-weight: bold;
 }
 
 #main-container {
     display: flex;
-    gap: 20px; /* Space between the two sections */
+    gap: 25px; /* Increased space between sections */
 }
 
 .collector-lister-section {
@@ -41,30 +41,33 @@ h3 {
 }
 
 .drop-zone { /* Combined styles for both drop zones */
-    border: 2px dashed var(--vscode-editorWidget-border);
-    padding: 20px;
-    margin-bottom: 15px;
+    border: 2px dashed var(--vscode-inputOption-activeBorder, var(--vscode-editorWidget-border)); /* Use active border color if available */
+    padding: 25px; /* Increased padding */
+    margin-bottom: 20px; /* Increased margin */
     text-align: center;
     background-color: var(--vscode-editorWidget-background);
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     flex-shrink: 0; /* Prevent drop zone from shrinking */
+    border-radius: 4px; /* Slightly rounded corners */
 }
 
 .drop-zone.drag-over {
     background-color: var(--vscode-list-activeSelectionBackground); /* Highlight when dragging over */
-    border-color: var(--vscode-list-activeSelectionForeground);
+    border-color: var(--vscode-focusBorder); /* Use focus border for stronger highlight */
+    border-style: solid; /* Change to solid border on drag over */
 }
 
 .drop-zone p {
     margin: 0;
     color: var(--vscode-descriptionForeground);
+    font-style: italic; /* Italicize placeholder text */
 }
 
 textarea {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 15px;
+    margin-bottom: 10px; /* Reduced margin below textarea */
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
     border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
@@ -72,24 +75,77 @@ textarea {
     font-size: var(--vscode-editor-font-size);
     flex-grow: 1; /* Allow textarea to grow */
     min-height: 150px; /* Ensure a minimum height */
+    border-radius: 3px; /* Slightly rounded corners */
+    padding: 8px; /* Add padding inside textarea */
 }
 
+/* General Button Styling */
 button {
-    padding: 8px 15px;
+    padding: 6px 12px; /* Slightly smaller padding */
     background-color: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
     border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
     cursor: pointer;
     text-align: center;
-    margin-right: 5px; /* Add some space between buttons */
-    margin-bottom: 5px; /* Add space below buttons if they wrap */
+    border-radius: 3px; /* Rounded corners */
     flex-shrink: 0; /* Prevent buttons from shrinking */
-}
-
-button:last-child {
-    margin-right: 0;
+    transition: background-color 0.1s ease; /* Add transition */
 }
 
 button:hover {
     background-color: var(--vscode-button-hoverBackground);
+}
+
+/* Button Group Layout */
+.button-group {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    margin-top: 5px; /* Space above button group */
+    margin-bottom: 10px; /* Space below button group */
+}
+
+/* Feedback Message Styling (Initially Hidden) */
+.feedback-message {
+    font-size: 0.9em;
+    color: var(--vscode-descriptionForeground);
+    min-height: 1.4em; /* Reserve space even when empty */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.feedback-message.visible {
+    opacity: 1;
+}
+
+
+/* --- Custom Button Colors (Applied to specific buttons) --- */
+
+/* Green for Copy buttons */
+#copy-collector-button,
+#copy-lister-button {
+    background-color: mediumseagreen; /* Green */
+    border-color: mediumseagreen;
+    color: white; /* Ensure text is readable */
+}
+
+#copy-collector-button:hover,
+#copy-lister-button:hover {
+    background-color: seagreen; /* Darker green on hover */
+    border-color: seagreen;
+    color: white; /* Keep text color on hover */
+}
+
+/* Red for Clear buttons */
+#clear-collector-button,
+#clear-lister-button {
+    background-color: indianred; /* Red */
+    border-color: indianred;
+    color: white; /* Ensure text is readable */
+}
+
+#clear-collector-button:hover,
+#clear-lister-button:hover {
+    background-color: firebrick; /* Darker red on hover */
+    border-color: firebrick;
+    color: white; /* Keep text color on hover */
 }

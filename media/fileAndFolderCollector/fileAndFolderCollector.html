@@ -24,8 +24,11 @@
             </div>
             <h3>Collected Paths:</h3>
             <textarea id="collected-paths" rows="15" readonly></textarea>
-            <button id="copy-collector-button">Copy Collected</button>
-            <button id="clear-collector-button">Clear Collected</button>
+            <div class="button-group">
+                <button id="copy-collector-button">Copy</button>
+                <button id="clear-collector-button">Clear</button>
+            </div>
+            <div id="collector-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
         </div>
 
         <!-- Section 2: Folder Content Lister -->
@@ -36,8 +39,11 @@
             </div>
             <h3>Listed File Paths:</h3>
             <textarea id="listed-paths" rows="15" readonly></textarea>
-            <button id="copy-lister-button">Copy Listed</button>
-            <button id="clear-lister-button">Clear Listed</button>
+            <div class="button-group">
+                <button id="copy-lister-button">Copy</button>
+                <button id="clear-lister-button">Clear</button>
+            </div>
+            <div id="lister-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
         </div>
     </div>
 

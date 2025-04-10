@@ -23,15 +23,15 @@ This extension provides several tools for gathering file and folder paths within
     *   **Left Section (Collect Paths):**
         *   Drag files and/or folders from VS Code's Explorer, your operating system, **or directly from an open editor tab** onto the "Drag files or folders here" area.
         *   The relative paths of the dropped items (prefixed with `@/`) are added to the "Collected Paths" text area below. Duplicates are automatically ignored.
-        *   Click "Copy Collected" to copy the collected list.
-        *   Click "Clear Collected" to reset the collected list.
+        *   Click "Copy" to copy the collected list.
+        *   Click "Clear" to reset the collected list.
     *   **Right Section (List Folder Contents):**
         *   Drag **folders** from VS Code's Explorer or your operating system onto the "Drag folders here to list contents" area. (Dropped files are ignored in this section).
         *   The extension recursively finds all files within the dropped folder(s), gets their relative paths (prefixed with `@/`), and adds them to the "Listed File Paths" text area below.
         *   If you drop multiple folders, the file lists from each drop are separated by a blank line.
         *   Duplicate file paths across *all* drops are ignored.
-        *   Click "Copy Listed" to copy the generated list.
-        *   Click "Clear Listed" to reset the listed paths.
+        *   Click "Copy" to copy the generated list.
+        *   Click "Clear" to reset the listed paths.
 *   **State:** The content of both text areas persists even if you switch tabs and come back.
 
 ### 3. File Name Searcher (Sidebar Panel)
@@ -42,7 +42,7 @@ This extension provides several tools for gathering file and folder paths within
     *   Optionally, check the "Match Case" box for case-sensitive searching (default is case-insensitive). Changing this checkbox also triggers a new search.
     *   The text area below will be populated with the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
     *   Results are prefixed with `@/` and separated into `--- Folders ---` and `--- Files ---` sections.
-    *   Click the "Copy All" button to copy the entire results list to your clipboard.
+    *   Click the "Copy" button to copy the entire results list to your clipboard.
     *   Click the "Clear" button to clear the search input and results.
 
 ## Code Structure
