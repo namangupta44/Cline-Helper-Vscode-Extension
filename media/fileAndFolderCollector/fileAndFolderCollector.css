@@ -19,10 +19,11 @@ h2 {
     padding-bottom: 5px;
     margin-bottom: 15px; /* More space below H2 */
     margin-top: 0; /* Remove default top margin */
+    margin-bottom: 10px; /* Reduced margin */
 }
 
 h3 {
-    margin-top: 10px; /* Reduced top margin */
+    margin-top: 8px; /* Reduced top margin */
     margin-bottom: 8px; /* Increased bottom margin */
     font-size: var(--vscode-font-size); /* Match body font size */
     font-weight: bold;
@@ -30,25 +31,51 @@ h3 {
 
 #main-container {
     display: flex;
-    gap: 25px; /* Increased space between sections */
+    flex-direction: row; /* Arrange columns horizontally */
+    gap: 20px; /* Space between left and right columns */
+    /* Removed fixed height to allow natural flow */
+    min-height: 200px; /* Add a minimum height for the whole container */
 }
 
-.collector-lister-section {
-    flex: 1; /* Each section takes equal width */
+/* Style for both main columns */
+#collector-section,
+#right-column-wrapper {
+    flex: 1 1 0; /* Each column takes equal width, allows shrinking/growing */
     display: flex;
-    flex-direction: column; /* Stack elements vertically within each section */
+    flex-direction: column; /* Stack elements vertically within each column */
     min-width: 0; /* Prevent flex items from overflowing */
+    gap: 1px; /* Further reduced gap between elements within columns */
 }
 
-.drop-zone { /* Combined styles for both drop zones */
+/* Specific styling for the right column wrapper */
+#right-column-wrapper {
+    /* No additional specific styles needed for now, inherits from above */
+}
+
+/* Styling for the sections *within* the right column */
+#folder-list-input-section,
+#lister-section {
+    display: flex;
+    flex-direction: column;
+    /* Let textareas control the height distribution */
+    flex: 1 1 auto; /* Allow sections to grow/shrink, base on auto height */
+    min-height: 0; /* Allow sections to shrink if needed */
+}
+
+.drop-zone { /* Styles for all drop zones */
     border: 2px dashed var(--vscode-inputOption-activeBorder, var(--vscode-editorWidget-border)); /* Use active border color if available */
-    padding: 25px; /* Increased padding */
-    margin-bottom: 20px; /* Increased margin */
+    padding: 15px; /* Reduced padding */
+    margin-bottom: 10px; /* Reduced margin */
     text-align: center;
     background-color: var(--vscode-editorWidget-background);
     transition: background-color 0.2s ease, border-color 0.2s ease;
     flex-shrink: 0; /* Prevent drop zone from shrinking */
     border-radius: 4px; /* Slightly rounded corners */
+}
+
+/* Specific margin adjustment for the collector drop zone */
+#drop-zone-collector {
+    margin-bottom: 20px;
 }
 
 .drop-zone.drag-over {
@@ -67,16 +94,25 @@ textarea {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 10px; /* Reduced margin below textarea */
+    margin-bottom: 10px; /* Margin below textarea */
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
     border: 1px solid var(--vscode-input-border, var(--vscode-input-background));
     font-family: var(--vscode-editor-font-family);
     font-size: var(--vscode-editor-font-size);
     flex-grow: 1; /* Allow textarea to grow */
-    min-height: 150px; /* Ensure a minimum height */
+    min-height: 80px; /* Further reduced minimum height */
     border-radius: 3px; /* Slightly rounded corners */
     padding: 8px; /* Add padding inside textarea */
+    resize: vertical; /* Allow vertical resizing */
+}
+
+/* Allow textareas to grow within their flex column */
+#collected-paths,
+#folder-list-input,
+#listed-paths {
+    flex-grow: 1;
+    /* Remove fixed height if previously set */
 }
 
 /* General Button Styling */
@@ -109,6 +145,7 @@ button:hover {
     font-size: 0.9em;
     color: var(--vscode-descriptionForeground);
     min-height: 1.4em; /* Reserve space even when empty */
+    margin-top: 5px; /* Add a little space above feedback */
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
 }
@@ -137,6 +174,7 @@ button:hover {
 
 /* Red for Clear buttons */
 #clear-collector-button,
+#clear-folder-list-button, /* Added new button */
 #clear-lister-button {
     background-color: indianred; /* Red */
     border-color: indianred;
@@ -144,6 +182,7 @@ button:hover {
 }
 
 #clear-collector-button:hover,
+#clear-folder-list-button:hover, /* Added new button */
 #clear-lister-button:hover {
     background-color: firebrick; /* Darker red on hover */
     border-color: firebrick;

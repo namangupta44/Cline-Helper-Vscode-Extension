@@ -13,10 +13,9 @@
     <title>File and Folder Collector</title>
 </head>
 <body>
-    <h1>File and Folder Collector</h1>
-
+    
     <div id="main-container">
-        <!-- Section 1: File Path Collector -->
+        <!-- Left Column: File Path Collector -->
         <div id="collector-section" class="collector-lister-section">
             <h2>Collect File/Folder Paths</h2>
             <div id="drop-zone-collector" class="drop-zone">
@@ -31,20 +30,32 @@
             <div id="collector-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
         </div>
 
-        <!-- Section 2: Folder Content Lister -->
-        <div id="lister-section" class="collector-lister-section">
-            <h2>List Folder Contents</h2>
-            <div id="drop-zone-lister" class="drop-zone">
-                <p>Drag folders here to list contents</p>
+        <!-- Right Column: Contains Folder Input and Results -->
+        <div id="right-column-wrapper">
+            <!-- Top of Right Column: Folder List Input -->
+            <div id="folder-list-input-section" class="collector-lister-section">
+                <h2>List Folder Contents</h2>
+            <div id="drop-zone-folder-list-input" class="drop-zone">
+                <p>Drag folders here OR manually enter paths below</p>
             </div>
+            <h3>Folders to List (one per line):</h3>
+            <textarea id="folder-list-input" rows="5"></textarea> <!-- Editable -->
+            <!-- Button group removed from here -->
+            <div id="folder-list-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
+        </div>
+
+            <!-- Bottom of Right Column: Resulting File Paths -->
+            <div id="lister-section" class="collector-lister-section">
+            <!-- Drop zone removed from here -->
             <h3>Listed File Paths:</h3>
-            <textarea id="listed-paths" rows="15" readonly></textarea>
+            <textarea id="listed-paths" rows="10" readonly></textarea>
             <div class="button-group">
                 <button id="copy-lister-button">Copy</button>
                 <button id="clear-lister-button">Clear</button>
             </div>
-            <div id="lister-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
-        </div>
+                <div id="lister-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
+            </div>
+        </div> <!-- End of right-column-wrapper -->
     </div>
 
     <script nonce="${nonce}" src="${scriptUri}"></script>
