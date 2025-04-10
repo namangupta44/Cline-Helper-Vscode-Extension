@@ -1,6 +1,6 @@
-# Get Open Files & Path Collector Extension
+# Get Open Files, Path Collector & File Name Searcher Extension
 
-This extension provides several tools for gathering file and folder paths within VS Code, accessible via the Activity Bar and editor tabs. All collected paths are prefixed with `@/`.
+This extension provides several tools for gathering file and folder paths within VS Code, accessible via the Activity Bar and editor tabs. All collected paths are prefixed with `@/`. It also includes a tool to search for files and folders by name.
 
 ## Features
 
@@ -41,6 +41,18 @@ This extension provides several tools for gathering file and folder paths within
     *   Click the "Clear List" button to reset the listed paths in this tab.
 *   **State:** The listed content persists even if you switch tabs and come back.
 
+### 4. File Name Searcher (Sidebar Panel)
+
+*   **Access:** Click the list icon (`$(list-unordered)`) in the Activity Bar on the far left. This opens the "Open Files List" container in the sidebar, where the "File Name Searcher" view is located.
+*   **Functionality:**
+    *   Enter a part of a file or folder name into the input box.
+    *   Optionally, check the "Match Case" box for case-sensitive searching (default is case-insensitive).
+    *   Click the "Search" button (or press Enter in the input box).
+    *   The text area below will be populated with the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
+    *   Results are prefixed with `@/` and separated into `--- Folders ---` and `--- Files ---` sections.
+    *   Click the "Copy All" button to copy the entire results list to your clipboard.
+    *   Click the "Clear" button to clear the search input and results.
+
 ## Code Structure
 
 The extension code is organized as follows:
@@ -48,7 +60,9 @@ The extension code is organized as follows:
 *   `src/`: Contains the main TypeScript extension code.
     *   `extension.ts`: The main activation file. It registers commands, registers the sidebar webview provider, and contains the logic for creating and managing the editor tab webview panels (Collector and Lister).
     *   `listOpenFiles/`: Code specific to the Sidebar Panel (Feature A).
-        *   `ListOpenFilesWebViewProvider.ts`: Implements `vscode.WebviewViewProvider` to manage the sidebar panel's content and communication.
+        *   `ListOpenFilesWebViewProvider.ts`: Implements `vscode.WebviewViewProvider` to manage the "Open Files List" sidebar panel's content and communication.
+    *   `fileNameSearcher/`: Code specific to the File Name Searcher sidebar panel (Feature 4).
+        *   `FileNameSearcherWebViewProvider.ts`: Implements `vscode.WebviewViewProvider` to manage the "File Name Searcher" sidebar panel's content and communication.
     *   `collector/`: (Currently empty, logic is in `extension.ts`'s `createCollectorPanel` function).
     *   `folderLister/`: (Currently empty, logic is in `extension.ts`'s `createFolderListerPanel` function).
 *   `media/`: Contains static assets (HTML, CSS, JS) used within the webviews.
@@ -64,6 +78,10 @@ The extension code is organized as follows:
         *   `folderLister.html`
         *   `folderLister.css`
         *   `folderLister.js`
+    *   `fileNameSearcher/`: Assets for the File Name Searcher panel (Feature 4).
+        *   `fileNameSearcher.html`
+        *   `fileNameSearcher.css`
+        *   `fileNameSearcher.js`
 *   `package.json`: The extension manifest file. Defines commands, activation events, UI contributions (Activity Bar icon, sidebar view), etc.
 *   `out/`: Compiled JavaScript output (generated via `npm run compile`).
 

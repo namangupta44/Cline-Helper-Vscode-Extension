@@ -12,7 +12,8 @@
   "activationEvents": [
     "onView:list-open-files-view",
     "onCommand:get-open-files.openCollectorTab",
-    "onCommand:get-open-files.openFolderListerTab"
+    "onCommand:get-open-files.openFolderListerTab",
+    "onView:fileNameSearcher.view"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -24,6 +25,10 @@
       {
         "command": "get-open-files.openFolderListerTab",
         "title": "Open Folder Content Lister"
+      },
+      {
+        "command": "fileNameSearcher.showView",
+        "title": "Show File Name Searcher"
       }
     ],
     "viewsContainers": {
@@ -41,6 +46,12 @@
           "id": "list-open-files-view",
           "name": "Open Files List",
           "contextualTitle": "Open Files List",
+          "type": "webview"
+        },
+        {
+          "id": "fileNameSearcher.view",
+          "name": "File Name Searcher",
+          "contextualTitle": "File Name Searcher",
           "type": "webview"
         }
       ]

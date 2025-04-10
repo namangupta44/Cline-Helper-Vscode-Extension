@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ListOpenFilesWebViewProvider } from './listOpenFiles/ListOpenFilesWebViewProvider'; // Updated import path
+import { FileNameSearcherWebViewProvider } from './fileNameSearcher/FileNameSearcherWebViewProvider'; // Import the new provider
 import * as path from 'path'; // Needed for path operations
 import * as fs from 'fs'; // Needed for reading HTML file
 
@@ -43,6 +44,21 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('get-open-files.openFolderListerTab', () => {
 			createFolderListerPanel(context); // Use helper function
+		})
+	);
+
+	// --- Feature D: File Name Searcher (Sidebar) ---
+	const fileNameSearcherProvider = new FileNameSearcherWebViewProvider(context.extensionUri);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(FileNameSearcherWebViewProvider.viewType, fileNameSearcherProvider)
+	);
+	// Optional command to focus the view if needed elsewhere
+	context.subscriptions.push(
+		vscode.commands.registerCommand('fileNameSearcher.showView', () => {
+			// This command doesn't strictly need to do anything if activation is via view ID,
+			// but could be used to programmatically focus the view if desired.
+			// For now, just log activation.
+			console.log('fileNameSearcher.showView command activated');
 		})
 	);
 }
