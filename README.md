@@ -39,11 +39,17 @@ This extension provides several tools for gathering file and folder paths within
 *   **Access:** Click the list icon (`$(list-unordered)`) in the Activity Bar on the far left. This opens the "Open Files List" container in the sidebar, where the "File Name Searcher" view is located.
 *   **Functionality:**
     *   Enter a part of a file or folder name into the input box. The search will begin automatically as you type (after a brief pause).
-    *   Optionally, check the "Match Case" box for case-sensitive searching (default is case-insensitive). Changing this checkbox also triggers a new search.
-    *   The text area below will be populated with the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
-    *   Results are prefixed with `@/` and separated into `--- Folders ---` and `--- Files ---` sections.
-    *   Click the "Copy" button to copy the entire results list to your clipboard.
-    *   Click the "Clear" button to clear the search input and results.
+    *   Checkboxes for "Match Case" and "Reveal File in Explorer too" are available side-by-side below the input.
+        *   **Match Case:** Toggles case-sensitive searching (default is case-insensitive). Changing this triggers a new search.
+        *   **Reveal File in Explorer:** Toggles whether clicking a *file* path also reveals it in the Explorer (default is OFF).
+    *   The results area below displays the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
+    *   Results are prefixed with `@/` and sorted into `--- Folders ---` and `--- Files ---` sections.
+    *   **Highlighting:** File paths that are *not* located within any of the folders found in the same search are highlighted in red.
+    *   **Clickable Paths:** You can Ctrl+Click (or Cmd+Click on Mac) on any file or folder path in the results:
+        *   Clicking a **folder** path reveals it in the VS Code Explorer sidebar.
+        *   Clicking a **file** path opens it in a new editor tab (non-preview). If the "Reveal File in Explorer" checkbox is checked, the file will *also* be revealed in the Explorer sidebar.
+    *   Click the "Copy" button to copy the entire results list (as plain text) to your clipboard.
+    *   Click the "Clear" button to clear the search input and results (the state of the checkboxes is preserved).
 
 ## Code Structure
 

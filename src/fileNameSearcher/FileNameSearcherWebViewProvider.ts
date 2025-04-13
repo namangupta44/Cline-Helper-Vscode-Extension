@@ -9,8 +9,9 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
     private readonly _extensionUri: vscode.Uri;
     private lastSearchTerm: string = '';
     private lastMatchCase: boolean = false;
-    // Store structured results instead of a single string
-    private lastSearchData: { folders: string[], files: { path: string, isOutside: boolean }[] } | null = null;
+    private lastRevealFileState: boolean = false; // State for the reveal toggle
+    // Store unified results structure
+    private lastSearchData: { type: 'folder' | 'file', displayPath: string, relativePath: string, isOutside?: boolean }[] | null = null;
 
     constructor(extensionUri: vscode.Uri) {
         this._extensionUri = extensionUri;
@@ -40,7 +41,8 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                     command: 'restoreState',
                     term: this.lastSearchTerm,
                     matchCase: this.lastMatchCase,
-                    results: this.lastSearchData // Send structured data
+                    revealState: this.lastRevealFileState, // Send reveal state
+                    results: this.lastSearchData // Send unified structured data
                 });
             }
         });
@@ -57,6 +59,33 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                     await this.performSearch(searchTerm, matchCase);
                     // No need to check if searchTerm is empty here, performSearch handles it
                     return;
+                case 'setRevealState':
+                    this.lastRevealFileState = message.state ?? false;
+                    return;
+                case 'openPath':
+                    // Destructure reveal property, default to false if not present (e.g., for folders)
+                    const { relativePath, type, reveal = false } = message;
+                    if (relativePath && type && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+                        const workspaceRoot = vscode.workspace.workspaceFolders[0].uri;
+                        const itemUri = vscode.Uri.joinPath(workspaceRoot, relativePath);
+                        try {
+                            if (type === 'file') {
+                                // Open file in a non-preview tab
+                                await vscode.commands.executeCommand('vscode.open', itemUri, { preview: false });
+                                // Only reveal if the reveal flag from the message is true
+                                if (reveal) {
+                                    await vscode.commands.executeCommand('revealInExplorer', itemUri);
+                                }
+                            } else if (type === 'folder') {
+                                // Always reveal folders
+                                await vscode.commands.executeCommand('revealInExplorer', itemUri);
+                            }
+                        } catch (err) {
+                            console.error(`Error opening ${type} ${relativePath}:`, err);
+                            vscode.window.showErrorMessage(`Could not open ${type}: ${relativePath}`);
+                        }
+                    }
+                    return;
                 case 'copy':
                     const textToCopy = message.text;
                     if (textToCopy) {
@@ -67,6 +96,7 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                 case 'clearSearch': // Handle message from webview clear button
                     this.lastSearchTerm = '';
                     this.lastMatchCase = false;
+                    // Don't reset reveal state on clear, keep user preference
                     this.lastSearchData = null; // Clear structured data
                     // Optional: Clear view immediately if desired
                     // webviewView.webview.postMessage({ command: 'updateResults', results: null });
@@ -82,8 +112,11 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 
         if (!this._view) { return; } // View not ready
 
+        const results: { type: 'folder' | 'file', displayPath: string, relativePath: string, isOutside?: boolean }[] = [];
+
         if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
-            this.lastSearchData = { folders: [], files: [{ path: "No workspace open.", isOutside: false }] };
+            results.push({ type: 'file', displayPath: "No workspace open.", relativePath: '', isOutside: false }); // Use 'file' type for messages
+            this.lastSearchData = results;
             this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
             return;
         }
@@ -96,43 +129,58 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
         }
 
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri; // Use the first workspace folder
-        const foundFoldersPaths: string[] = []; // Store full paths for comparison
-        const foundFilesPaths: string[] = [];   // Store full paths for comparison
+        const foundFoldersPaths: string[] = []; // Store relative paths for comparison
+        const foundFilesPaths: string[] = [];   // Store relative paths for comparison
         const excludePatterns = ['**/node_modules/**', '**/.git/**']; // Add more if needed
 
         try {
             // Find all matching entries first
             await this.findMatchingEntriesRecursive(workspaceRoot, term, matchCase, foundFoldersPaths, foundFilesPaths, excludePatterns);
 
-            // Format paths and determine if files are outside folders
-            const formattedFolders = foundFoldersPaths.map(p => `@/${p.replace(/\\/g, '/')}`);
-            const formattedFiles = foundFilesPaths.map(filePath => {
-                const formattedPath = `@/${filePath.replace(/\\/g, '/')}`;
-                // Check if the file path starts with any of the found folder paths + separator
-                const isOutside = !foundFoldersPaths.some(folderPath =>
-                    filePath.startsWith(folderPath + path.sep) || filePath.startsWith(folderPath + '/') // Handle both separators
-                );
-                return { path: formattedPath, isOutside: isOutside };
+            // Add folders to results
+            foundFoldersPaths.forEach(relativePath => {
+                results.push({
+                    type: 'folder',
+                    displayPath: `@/${relativePath.replace(/\\/g, '/')}`,
+                    relativePath: relativePath
+                });
             });
 
-            // Prepare structured data for the webview
-            const searchData: { folders: string[], files: { path: string, isOutside: boolean }[] } = {
-                folders: formattedFolders,
-                files: formattedFiles
-            };
+            // Add files to results and determine if outside
+            foundFilesPaths.forEach(relativePath => {
+                const isOutside = !foundFoldersPaths.some(folderPath =>
+                    relativePath.startsWith(folderPath + path.sep) || relativePath.startsWith(folderPath + '/') // Handle both separators
+                );
+                results.push({
+                    type: 'file',
+                    displayPath: `@/${relativePath.replace(/\\/g, '/')}`,
+                    relativePath: relativePath,
+                    isOutside: isOutside
+                });
+            });
+
+            // Sort results: folders first, then files, alphabetically within each group
+            results.sort((a, b) => {
+                if (a.type !== b.type) {
+                    return a.type === 'folder' ? -1 : 1; // Folders before files
+                }
+                return a.displayPath.localeCompare(b.displayPath); // Alphabetical sort
+            });
+
 
             // Add a message if nothing was found
-            if (searchData.folders.length === 0 && searchData.files.length === 0) {
-                 searchData.files.push({ path: "No matching files or folders found.", isOutside: false });
+            if (results.length === 0) {
+                 results.push({ type: 'file', displayPath: "No matching files or folders found.", relativePath: '', isOutside: false });
             }
 
-            this.lastSearchData = searchData; // Store the structured results
+            this.lastSearchData = results; // Store the unified results
             this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
 
         } catch (error) {
             console.error("Error during file search:", error);
             vscode.window.showErrorMessage(`Error searching files: ${error}`);
-            this.lastSearchData = { folders: [], files: [{ path: "Error during search.", isOutside: false }] }; // Store error state
+            const errorResult = [{ type: 'file', displayPath: "Error during search.", relativePath: '', isOutside: false }] as typeof results;
+            this.lastSearchData = errorResult; // Store error state
             this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
         }
     }
@@ -227,9 +275,14 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 			<body>
                 <div class="container">
                     <input type="text" id="search-input" placeholder="Enter filename part...">
-                    <label style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
-                        <input type="checkbox" id="match-case-checkbox"> Match Case
-                    </label>
+                    <div class="checkbox-group" style="display: flex; gap: 15px; margin-top: 5px;"> <!-- Wrap checkboxes -->
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="match-case-checkbox"> Match Case
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="reveal-file-checkbox"> Reveal File in Explorer too
+                        </label>
+                    </div>
                     <!-- Clear button moved below -->
 
                     <div id="results-container">

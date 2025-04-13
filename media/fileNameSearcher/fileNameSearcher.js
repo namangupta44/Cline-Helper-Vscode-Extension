@@ -3,7 +3,8 @@
 const vscode = acquireVsCodeApi();
 
 const searchInput = document.getElementById('search-input');
-const matchCaseCheckbox = document.getElementById('match-case-checkbox'); // Get checkbox
+const matchCaseCheckbox = document.getElementById('match-case-checkbox');
+const revealFileCheckbox = document.getElementById('reveal-file-checkbox'); // Get reveal checkbox
 // const searchButton = document.getElementById('search-button'); // Removed
 const clearButton = document.getElementById('clear-button');
 const resultsArea = document.getElementById('results-area'); // Now a div
@@ -38,12 +39,30 @@ const debouncedSearch = debounce(performSearch, 300); // 300ms delay
 
 searchInput.addEventListener('input', debouncedSearch); // Trigger search on input change
 matchCaseCheckbox.addEventListener('change', performSearch); // Trigger search immediately on checkbox change
+revealFileCheckbox.addEventListener('change', () => {
+    // Notify provider about the state change
+    vscode.postMessage({
+        command: 'setRevealState',
+        state: revealFileCheckbox.checked
+    });
+});
 
 copyButton.addEventListener('click', () => {
-    // Reconstruct the text content from the divs inside resultsArea
+    // Reconstruct the text content from the clickable divs inside resultsArea
     const lines = [];
-    const resultNodes = resultsArea.querySelectorAll('div'); // Get all divs inside
-    resultNodes.forEach(node => lines.push(node.textContent));
+    // Select only the divs that represent actual results (have data-path)
+    const resultNodes = resultsArea.querySelectorAll('div[data-path]');
+    let currentType = null;
+    resultNodes.forEach(node => {
+        const nodeType = node.dataset.type;
+        // Add headers if type changes
+        if (nodeType !== currentType) {
+            if (currentType !== null) lines.push(''); // Add blank line between sections
+            lines.push(`--- ${nodeType === 'folder' ? 'Folders' : 'Files'} ---`);
+            currentType = nodeType;
+        }
+        lines.push(node.textContent);
+    });
     const textToCopy = lines.join('\n');
 
     if (textToCopy) {
@@ -76,56 +95,81 @@ clearButton.addEventListener('click', () => {
 // --- Message Handling ---
 
 // --- Render Results Function ---
-function renderResults(data) {
+function renderResults(results) { // Expects the unified results array
     resultsArea.innerHTML = ''; // Clear previous results
-    if (!data || (!data.folders?.length && !data.files?.length)) {
-        // Handle null, empty or "not found" message case
-        if (data?.files?.[0]?.path) { // Check if there's a message like "No results"
-             const msgDiv = document.createElement('div');
-             msgDiv.textContent = data.files[0].path;
-             resultsArea.appendChild(msgDiv);
-        }
-        return; // Nothing more to render
+    if (!results || results.length === 0) {
+        return; // Nothing to render
     }
 
     const fragment = document.createDocumentFragment();
-    let hasContent = false;
+    let currentType = null;
 
-    // Render Folders
-    if (data.folders && data.folders.length > 0) {
-        const folderHeader = document.createElement('div');
-        folderHeader.textContent = '--- Folders ---';
-        fragment.appendChild(folderHeader);
-        data.folders.forEach(folderPath => {
-            const div = document.createElement('div');
-            div.textContent = folderPath;
-            fragment.appendChild(div);
-        });
-        hasContent = true;
-    }
-
-    // Render Files
-    if (data.files && data.files.length > 0) {
-        if (hasContent) { // Add separator line if folders were present
-            const separator = document.createElement('div');
-            // separator.textContent = ''; // Or use an empty div for spacing
-            fragment.appendChild(separator);
-        }
-        const fileHeader = document.createElement('div');
-        fileHeader.textContent = '--- Files ---';
-        fragment.appendChild(fileHeader);
-        data.files.forEach(file => {
-            const div = document.createElement('div');
-            div.textContent = file.path;
-            if (file.isOutside) {
-                div.classList.add('outside-file'); // Apply highlighting class
+    results.forEach(item => {
+        // Add headers if type changes or it's the first item
+        if (item.type !== currentType) {
+            if (currentType !== null) {
+                 // Add blank line div between sections if needed (optional)
+                 // const separator = document.createElement('div');
+                 // fragment.appendChild(separator);
             }
-            fragment.appendChild(div);
-        });
-    }
+            const headerDiv = document.createElement('div');
+            // Use displayPath for messages like "No results found"
+            headerDiv.textContent = item.relativePath === '' ? item.displayPath : `--- ${item.type === 'folder' ? 'Folders' : 'Files'} ---`;
+            // Don't make headers clickable
+            fragment.appendChild(headerDiv);
+            currentType = item.type;
+        }
+
+         // Don't render clickable div for messages
+         if (item.relativePath === '') {
+             return;
+         }
+
+        // Create clickable div for actual results
+        const div = document.createElement('div');
+        div.textContent = item.displayPath;
+        div.classList.add('clickable-path'); // Add class for styling and click handling
+        div.dataset.path = item.relativePath; // Store relative path
+        div.dataset.type = item.type;         // Store type
+
+        if (item.type === 'file' && item.isOutside) {
+            div.classList.add('outside-file'); // Apply highlighting class
+        }
+        fragment.appendChild(div);
+    });
 
     resultsArea.appendChild(fragment);
 }
+
+
+// --- Click Listener for Opening Paths ---
+resultsArea.addEventListener('click', (event) => {
+    // Check if Ctrl key (or Cmd key on Mac) was pressed
+    if (!event.ctrlKey && !event.metaKey) {
+        return;
+    }
+
+    const targetElement = event.target;
+    // Check if the clicked element is one of our clickable paths
+    if (targetElement.classList.contains('clickable-path')) {
+        event.preventDefault(); // Prevent any default browser action
+        const relativePath = targetElement.dataset.path;
+        const type = targetElement.dataset.type;
+
+        if (relativePath && type) {
+            const messagePayload = {
+                command: 'openPath',
+                relativePath: relativePath,
+                type: type
+            };
+            // Include reveal state only for files
+            if (type === 'file') {
+                messagePayload.reveal = revealFileCheckbox.checked;
+            }
+            vscode.postMessage(messagePayload);
+        }
+    }
+});
 
 
 // --- Message Handling ---
@@ -140,6 +184,7 @@ window.addEventListener('message', event => {
         case 'restoreState':
             searchInput.value = message.term || '';
             matchCaseCheckbox.checked = message.matchCase || false;
+            revealFileCheckbox.checked = message.revealState || false; // Restore reveal checkbox state
             renderResults(message.results); // Use the render function for results
             break;
         // Add other cases if needed for feedback, e.g., copy confirmation

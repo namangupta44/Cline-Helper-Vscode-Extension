@@ -9,9 +9,14 @@
 <body>
     <div class="container">
         <input type="text" id="search-input" placeholder="Enter filename part...">
-        <label style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
-            <input type="checkbox" id="match-case-checkbox"> Match Case
-        </label>
+        <div class="checkbox-group" style="display: flex; gap: 15px; margin-top: 5px;"> <!-- Wrap checkboxes -->
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="match-case-checkbox"> Match Case
+            </label>
+             <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="reveal-file-checkbox"> Reveal File in Explorer too
+            </label>
+        </div>
         <div style="display: flex; gap: 5px; margin-top: 5px;">
              <button id="clear-button">Clear</button>
         </div>

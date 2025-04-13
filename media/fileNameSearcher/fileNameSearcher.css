@@ -20,6 +20,20 @@ input[type="text"] {
     border-radius: 3px;
 }
 
+/* Style for the checkbox group */
+.checkbox-group {
+    display: flex;
+    gap: 15px; /* Space between checkboxes */
+    margin-top: 5px;
+    align-items: center; /* Vertically align items in the group */
+}
+
+/* Optional: Remove margin-top from individual labels if handled by the group */
+.checkbox-group label {
+    margin-top: 0;
+}
+
+
 button {
     padding: 8px 12px;
     border: 1px solid var(--vscode-button-border, transparent);
@@ -109,6 +123,16 @@ button:hover {
 /* Class to highlight files outside found folders */
 .outside-file {
     color: indianred; /* Use the same red as the clear button */
+}
+
+/* Style for clickable paths */
+.clickable-path {
+    cursor: pointer;
+    text-decoration: none; /* Remove default underline if any */
+}
+
+.clickable-path:hover {
+    text-decoration: underline; /* Underline on hover */
 }
 
 
