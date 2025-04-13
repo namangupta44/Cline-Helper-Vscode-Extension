@@ -107,13 +107,72 @@ textarea {
     resize: vertical; /* Allow vertical resizing */
 }
 
-/* Allow textareas to grow within their flex column */
+/* Style the div to look like the old textarea */
+.results-display {
+    width: 100%; /* Use 100% width */
+    box-sizing: border-box; /* Include padding/border in width */
+    font-family: var(--vscode-editor-font-family, monospace); /* Use editor font or fallback */
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 3px;
+    padding: 8px;
+    overflow-y: auto; /* Add scrollbar if content overflows */
+    white-space: pre; /* Preserve whitespace like in textarea */
+    resize: vertical; /* Allow vertical resizing */
+    flex-grow: 1; /* Allow div to grow */
+    min-height: 80px; /* Match textarea min-height */
+    margin-bottom: 10px; /* Add margin like textarea */
+}
+
+/* Style for individual result lines inside the div */
+.results-display > div {
+    padding: 1px 0; /* Small vertical padding for lines */
+    margin: 0;
+    line-height: 1.4; /* Adjust line spacing if needed */
+}
+
+/* Style for clickable paths */
+.clickable-path {
+    cursor: pointer;
+    text-decoration: none; /* Remove default underline if any */
+}
+
+.clickable-path:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+
+/* Allow textareas/divs to grow within their flex column */
 #collected-paths,
-#folder-list-input,
+#folder-list-input, /* Changed from #folder-list-input-div */
 #listed-paths {
     flex-grow: 1;
     /* Remove fixed height if previously set */
 }
+
+/* Style for the checkbox group */
+.checkbox-group {
+    display: flex;
+    gap: 5px; /* Space between checkbox and label */
+    margin-top: 5px; /* Space above */
+    margin-bottom: 5px; /* Space below */
+    align-items: center; /* Vertically align items */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer; /* Make label clickable */
+}
+
+.checkbox-group input[type="checkbox"] {
+    cursor: pointer; /* Make checkbox clickable */
+    margin: 0; /* Remove default margin */
+}
+
 
 /* General Button Styling */
 button {
@@ -174,7 +233,7 @@ button:hover {
 
 /* Red for Clear buttons */
 #clear-collector-button,
-#clear-folder-list-button, /* Added new button */
+/* Removed #clear-folder-list-button */
 #clear-lister-button {
     background-color: indianred; /* Red */
     border-color: indianred;
@@ -182,7 +241,7 @@ button:hover {
 }
 
 #clear-collector-button:hover,
-#clear-folder-list-button:hover, /* Added new button */
+/* Removed #clear-folder-list-button:hover */
 #clear-lister-button:hover {
     background-color: firebrick; /* Darker red on hover */
     border-color: firebrick;

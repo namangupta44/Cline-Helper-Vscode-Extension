@@ -21,8 +21,13 @@
             <div id="drop-zone-collector" class="drop-zone">
                 <p>Drag files or folders here</p>
             </div>
-            <h3>Collected Paths:</h3>
-            <textarea id="collected-paths" rows="15" readonly></textarea>
+            <h3>Collected Paths: (Ctrl+Click to open)</h3>
+            <div id="collected-paths" class="results-display" data-section="collector"></div> <!-- Changed textarea to div -->
+            <div class="checkbox-group"> <!-- Added checkbox group -->
+                <label>
+                    <input type="checkbox" id="reveal-file-checkbox-collector"> Reveal File in Explorer too
+                </label>
+            </div>
             <div class="button-group">
                 <button id="copy-collector-button">Copy</button>
                 <button id="clear-collector-button">Clear</button>
@@ -36,19 +41,23 @@
             <div id="folder-list-input-section" class="collector-lister-section">
                 <h2>List Folder Contents</h2>
             <div id="drop-zone-folder-list-input" class="drop-zone">
-                <p>Drag folders here OR manually enter paths below</p>
+                <p>Drag folders here to add, or paste paths below</p> <!-- Updated text -->
             </div>
-            <h3>Folders to List (one per line):</h3>
-            <textarea id="folder-list-input" rows="5"></textarea> <!-- Editable -->
-            <!-- Button group removed from here -->
-            <div id="folder-list-feedback" class="feedback-message"></div> <!-- Feedback placeholder -->
+            <h3>Folders to List: (Enter one path per line)</h3> <!-- Updated text -->
+            <textarea id="folder-list-input" placeholder="Enter folder paths here (e.g., @/src/components)"></textarea> <!-- Changed div back to textarea -->
+            <!-- Removed button group and feedback div -->
         </div>
 
             <!-- Bottom of Right Column: Resulting File Paths -->
             <div id="lister-section" class="collector-lister-section">
             <!-- Drop zone removed from here -->
-            <h3>Listed File Paths:</h3>
-            <textarea id="listed-paths" rows="10" readonly></textarea>
+            <h3>Listed File Paths: (Ctrl+Click to open)</h3>
+            <div id="listed-paths" class="results-display" data-section="lister"></div> <!-- Changed textarea to div -->
+             <div class="checkbox-group"> <!-- Added checkbox group -->
+                <label>
+                    <input type="checkbox" id="reveal-file-checkbox-lister"> Reveal File in Explorer too
+                </label>
+            </div>
             <div class="button-group">
                 <button id="copy-lister-button">Copy</button>
                 <button id="clear-lister-button">Clear</button>

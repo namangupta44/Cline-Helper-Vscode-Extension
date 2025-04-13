@@ -27,7 +27,23 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        // Remove state restoration from here
+        // Helper to resolve relative path (@/...) to a full URI
+        const resolvePrefixedPath = (prefixedPath: string): vscode.Uri | null => {
+            if (!prefixedPath || !prefixedPath.startsWith('@/')) {
+                return null;
+            }
+            const relativePath = prefixedPath.substring(2);
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (workspaceFolders && workspaceFolders.length > 0) {
+                try {
+                    return vscode.Uri.joinPath(workspaceFolders[0].uri, relativePath);
+                } catch (e) {
+                    console.error(`Error resolving path ${relativePath}:`, e);
+                    return null;
+                }
+            }
+            return null; // Cannot resolve without a workspace folder
+        };
 
         // Add listener for visibility changes
         webviewView.onDidChangeVisibility(() => {
@@ -48,18 +64,39 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
                     vscode.commands.executeCommand('get-open-files.openFileAndFolderCollector');
                     return;
                 case 'copyList':
-                    if (this.lastFileList) {
-                        vscode.env.clipboard.writeText(this.lastFileList);
+                    // Text is now sent from the webview
+                    const textToCopy = message.text || this.lastFileList; // Fallback to stored list if text not sent
+                    if (textToCopy) {
+                        vscode.env.clipboard.writeText(textToCopy);
                         // Optional: Send feedback to webview
                         // webviewView.webview.postMessage({ command: 'copySuccess' });
+                    } else {
+                        vscode.window.showWarningMessage('No list content to copy.');
                     }
                     return;
                 case 'clearList':
                     this.lastFileList = ''; // Clear the stored state
-                    // Update the webview immediately
-                    webviewView.webview.postMessage({ command: 'updateList', text: '' });
-                    // Optional: Send feedback to webview
+                    // Webview clears its own UI, just need to clear state here
+                    // webviewView.webview.postMessage({ command: 'updateList', text: '' });
+                    // Optional: Send feedback to webview if needed
                     // webviewView.webview.postMessage({ command: 'clearSuccess' });
+                    return;
+                case 'focusOpenFile':
+                    const prefixedPath = message.path;
+                    const targetUri = resolvePrefixedPath(prefixedPath);
+                    if (targetUri) {
+                        try {
+                            // Attempt to open the URI. If it's already open, this should focus it.
+                            // Using preview: false ensures it doesn't open in a temporary preview tab.
+                            vscode.commands.executeCommand('vscode.open', targetUri, { preview: false });
+                        } catch (err) {
+                            console.error(`Error focusing file ${prefixedPath}:`, err);
+                            vscode.window.showErrorMessage(`Could not focus file: ${prefixedPath}`);
+                        }
+                    } else {
+                        console.warn(`Could not resolve path for focusing: ${prefixedPath}`);
+                        vscode.window.showWarningMessage(`Could not resolve path: ${prefixedPath}`);
+                    }
                     return;
             }
         });
@@ -89,7 +126,9 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
             </head>
             <body>
                 <button id="get-files-button">Get Open File List</button> <!-- Updated text -->
-                <textarea id="file-list" rows="8" readonly></textarea> <!-- Reduced rows slightly -->
+                <!-- Changed textarea to div, added Ctrl+Click hint -->
+                <h3>Open Files: (Ctrl+Click to focus)</h3>
+                <div id="file-list" class="results-display"></div>
                 <div class="button-group"> <!-- Add button group -->
                     <button id="copy-list-button">Copy</button>
                     <button id="clear-list-button">Clear</button>

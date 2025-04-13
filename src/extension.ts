@@ -65,196 +65,217 @@ function createFileAndFolderCollectorPanel(context: vscode.ExtensionContext) {
 		column || vscode.ViewColumn.One,
 		{
 			enableScripts: true,
-			// Update resource root to the new directory
 			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media', 'fileAndFolderCollector')],
 			retainContextWhenHidden: true
 		}
 	);
 
 	// State variables
-	const collectedPaths = new Set<string>(); // For collector side (left)
-	let folderListInputText = ""; // For folder list input (middle)
-	let listedContent = ""; // For lister results (right)
-	const listedUniquePaths = new Set<string>(); // Track unique paths in the output
+	interface PathInfo { path: string; type: 'file' | 'folder'; }
+	interface ListedGroup { source: string; files: PathInfo[]; }
+	let collectedPaths: PathInfo[] = [];
+	let folderInputText: string = ''; // State for the folder input textarea
+	let listedPathsGrouped: ListedGroup[] = [];
+	let revealCollectorState = false;
+	let revealListerState = false;
+	const listedUniquePaths = new Set<string>(); // Used during processing
 
 	// Load the HTML
 	panel.webview.html = getWebviewHtml(panel.webview, context.extensionUri, 'fileAndFolderCollector');
 
-	// Helper function to process the folder list and update the lister output
-	async function processAndListFolders(inputText: string) {
-		folderListInputText = inputText; // Update state
-		listedContent = ""; // Clear previous results
-		listedUniquePaths.clear();
-		let combinedNewPaths: string[] = [];
-		let firstFolderProcessed = true;
-
-		const lines = inputText.split('\n').map(line => line.trim()).filter(line => line);
-
-		for (const line of lines) {
-			let folderPath = line;
-			if (folderPath.startsWith('@/')) {
-				folderPath = folderPath.substring(2);
-			}
-			if (!folderPath) continue;
-
-			let folderUri: vscode.Uri;
+	// Helper to resolve relative path (@/...) to a full URI
+	function resolvePrefixedPath(prefixedPath: string): vscode.Uri | null {
+		if (!prefixedPath || !prefixedPath.startsWith('@/')) {
+			return null;
+		}
+		const relativePath = prefixedPath.substring(2);
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (workspaceFolders && workspaceFolders.length > 0) {
 			try {
-				// Resolve relative path. Assume it's relative to the workspace root if not absolute.
-                // Note: This might need refinement if paths outside the workspace are common.
-                const workspaceFolders = vscode.workspace.workspaceFolders;
-                if (path.isAbsolute(folderPath)) {
-                    folderUri = vscode.Uri.file(folderPath);
-                } else if (workspaceFolders && workspaceFolders.length > 0) {
-				    folderUri = vscode.Uri.joinPath(workspaceFolders[0].uri, folderPath);
-                } else {
-                    throw new Error("Cannot resolve relative path: No workspace folder open.");
-                }
+				return vscode.Uri.joinPath(workspaceFolders[0].uri, relativePath);
+			} catch (e) {
+				console.error(`Error resolving path ${relativePath}:`, e);
+				return null;
+			}
+		}
+		return null;
+	}
 
+	// Helper function to process the folder list (reads from folderInputText state)
+	async function processAndListFolders() {
+		listedPathsGrouped = []; // Clear previous grouped results
+		listedUniquePaths.clear(); // Clear unique tracker for this run
+
+		// Parse paths from the text area content
+		const lines = folderInputText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+		const uniqueInputPaths = [...new Set(lines)]; // Deduplicate input lines
+
+		for (const sourcePath of uniqueInputPaths) {
+			// const sourcePath = folderInfo.path; // e.g., @/src/myFolder - No longer needed
+			let folderUri = resolvePrefixedPath(sourcePath);
+
+			if (!folderUri) {
+				console.warn("Lister: Could not resolve folder path:", sourcePath);
+				panel.webview.postMessage({ command: 'processingError', detail: `Could not resolve ${sourcePath}` });
+				continue;
+			}
+
+			const currentGroupFiles: PathInfo[] = [];
+
+			try {
 				const stats = await vscode.workspace.fs.stat(folderUri);
 				if (stats.type !== vscode.FileType.Directory) {
-					console.warn("Lister ignoring non-directory:", folderUri.fsPath);
-                    panel.webview.postMessage({ command: 'processingError', detail: `${line} is not a directory.` });
-					continue; // Skip non-directories
+					console.warn("Lister ignoring non-directory found in input list:", folderUri.fsPath);
+					panel.webview.postMessage({ command: 'processingError', detail: `${sourcePath} is not a directory.` });
+					continue;
 				}
 
-				// Find files in this directory
 				const filesInDir = await findFilesInDir(folderUri);
-				const newPathsForThisFolder: string[] = [];
 
 				filesInDir.forEach(fileUri => {
 					const relativePath = vscode.workspace.asRelativePath(fileUri, false);
 					const prefixedPath = `@/${relativePath}`;
 					if (!listedUniquePaths.has(prefixedPath)) {
 						listedUniquePaths.add(prefixedPath);
-						newPathsForThisFolder.push(prefixedPath);
+						currentGroupFiles.push({ path: prefixedPath, type: 'file' });
 					}
 				});
 
-				if (newPathsForThisFolder.length > 0) {
-					if (!firstFolderProcessed) {
-						combinedNewPaths.push(''); // Add blank line separator before adding paths of subsequent folders
-					}
-					combinedNewPaths = combinedNewPaths.concat(newPathsForThisFolder);
-					firstFolderProcessed = false;
+				if (currentGroupFiles.length > 0) {
+					listedPathsGrouped.push({ source: sourcePath, files: currentGroupFiles });
 				}
 
 			} catch (e: any) {
-				console.error("Lister: Error processing path:", line, e);
-                panel.webview.postMessage({ command: 'processingError', detail: `Error processing ${line}: ${e.message}` });
+				console.error("Lister: Error processing path:", sourcePath, e);
+				panel.webview.postMessage({ command: 'processingError', detail: `Error processing ${sourcePath}: ${e.message}` });
 			}
 		}
-
-		listedContent = combinedNewPaths.join('\n');
-		panel.webview.postMessage({ command: 'updateListerList', text: listedContent });
+		// Send the grouped list
+		panel.webview.postMessage({ command: 'updateListerList', groupedPaths: listedPathsGrouped });
 	}
 
 	// Handle messages from the webview
 	panel.webview.onDidReceiveMessage(
 		async message => {
 			switch (message.command) {
-				// --- Collector Side Logic (Left Section) ---
+				// --- Collector Side Logic ---
 				case 'addPaths':
-					{ // Use block scope for const
+					{
 						const collectorUris: string[] = message.uris || [];
-						collectorUris.forEach(uriString => {
+						const currentPathsSet = new Set(collectedPaths.map(p => p.path));
+						let itemsAdded = false;
+						for (const uriString of collectorUris) {
 							try {
 								const uri = vscode.Uri.parse(uriString);
 								const relativePath = vscode.workspace.asRelativePath(uri, false);
-								collectedPaths.add(`@/${relativePath}`);
-							} catch (e) { console.error("Collector: Error parsing URI:", uriString, e); }
-						});
-						panel.webview.postMessage({ command: 'updateCollectorList', text: Array.from(collectedPaths).join('\n') });
-					}
-					return;
-				case 'copyCollectorPaths':
-					{ // Use block scope for const
-						const collectorListToCopy = Array.from(collectedPaths).join('\n');
-						if (collectorListToCopy) {
-							vscode.env.clipboard.writeText(collectorListToCopy);
-							panel.webview.postMessage({ command: 'collectorCopySuccess' });
-						} else { vscode.window.showWarningMessage('No paths collected.'); }
+								const prefixedPath = `@/${relativePath}`;
+								if (!currentPathsSet.has(prefixedPath)) {
+									const stats = await vscode.workspace.fs.stat(uri);
+									const type: 'file' | 'folder' = (stats.type === vscode.FileType.Directory) ? 'folder' : 'file';
+									collectedPaths.push({ path: prefixedPath, type: type });
+									currentPathsSet.add(prefixedPath);
+									itemsAdded = true;
+								}
+							} catch (e) { console.error("Collector: Error parsing/statting URI:", uriString, e); panel.webview.postMessage({ command: 'processingError', detail: `Error adding ${uriString}.` }); }
+						}
+						if (itemsAdded) { panel.webview.postMessage({ command: 'updateCollectorList', paths: collectedPaths }); }
 					}
 					return;
 				case 'clearCollectorList':
-					collectedPaths.clear();
-					panel.webview.postMessage({ command: 'updateCollectorList', text: '' });
-					panel.webview.postMessage({ command: 'collectorClearSuccess' });
+					collectedPaths = [];
+					panel.webview.postMessage({ command: 'updateCollectorList', paths: [] });
 					return;
 
-				// --- Folder List Input Logic (Middle Section) ---
-				case 'addFoldersToListInput':
-					{ // Use block scope for const/let
+				// --- Folder List Input Logic ---
+				case 'addFoldersToTextarea': // Renamed command
+					{
 						const folderUris: string[] = message.uris || [];
 						const addedPaths: string[] = [];
+						const currentInputLines = new Set(folderInputText.split('\n').map(l => l.trim()).filter(l => l.length > 0));
+
 						for (const uriString of folderUris) {
 							try {
 								const uri = vscode.Uri.parse(uriString);
-								// Check if it's a directory before adding to the input list
 								const stats = await vscode.workspace.fs.stat(uri);
 								if (stats.type === vscode.FileType.Directory) {
 									const relativePath = vscode.workspace.asRelativePath(uri, false);
-									addedPaths.push(`@/${relativePath}`);
-								} else {
-									console.warn("Ignoring non-directory dropped onto folder list:", uriString);
-                                    panel.webview.postMessage({ command: 'processingError', detail: `${vscode.workspace.asRelativePath(uri, false)} is not a directory.` });
-								}
-							} catch (e) {
-								console.error("Folder Input: Error parsing/statting URI:", uriString, e);
-                                panel.webview.postMessage({ command: 'processingError', detail: `Error adding ${uriString}.` });
-                            }
+									const prefixedPath = `@/${relativePath}`;
+									// Only add if not already present in the textarea
+									if (!currentInputLines.has(prefixedPath)) {
+										addedPaths.push(prefixedPath);
+										currentInputLines.add(prefixedPath); // Add to set to prevent duplicates within the same drop
+									}
+								} else { console.warn("Ignoring non-directory dropped onto folder list:", uriString); panel.webview.postMessage({ command: 'processingError', detail: `${vscode.workspace.asRelativePath(uri, false)} is not a directory.` }); }
+							} catch (e) { console.error("Folder Input: Error parsing/statting URI:", uriString, e); panel.webview.postMessage({ command: 'processingError', detail: `Error adding ${uriString}.` }); }
 						}
+
 						if (addedPaths.length > 0) {
-							// Append to existing text, ensuring a newline if needed
-							if (folderListInputText.length > 0 && !folderListInputText.endsWith('\n')) {
-								folderListInputText += '\n';
-							}
-							folderListInputText += addedPaths.join('\n');
-							panel.webview.postMessage({ command: 'updateFolderListInput', text: folderListInputText });
-							// Trigger processing immediately after adding via drop
-							await processAndListFolders(folderListInputText);
+							// Append new paths to the existing text, ensuring a newline if needed
+							const separator = folderInputText.trim().length > 0 ? '\n' : '';
+							folderInputText += separator + addedPaths.join('\n');
+							// Send the full updated text back to the webview
+							panel.webview.postMessage({ command: 'updateFolderListInput', text: folderInputText });
+							// Trigger processing immediately
+							await processAndListFolders();
 						}
 					}
 					return;
-				case 'processFolderList':
-					// Debounced in JS, process directly here
-					await processAndListFolders(message.text);
+				case 'processFolderListText': // New command for manual input
+					folderInputText = message.text || '';
+					await processAndListFolders(); // Process the new text
+					// No need to send back updateFolderListInput, webview already has the text
 					return;
-				// case 'clearFolderListInput': // Removed - functionality merged into clearListerList
-					// folderListInputText = "";
-					// panel.webview.postMessage({ command: 'updateFolderListInput', text: '' });
-					// listedContent = "";
-					// listedUniquePaths.clear();
-					// panel.webview.postMessage({ command: 'updateListerList', text: '' });
-					// panel.webview.postMessage({ command: 'folderListClearSuccess' });
-					// return;
 
-				// --- Lister Results Logic (Right Section) ---
-				case 'copyListerPaths':
-					if (listedContent) {
-						vscode.env.clipboard.writeText(listedContent);
-						panel.webview.postMessage({ command: 'listerCopySuccess' });
-					} else { vscode.window.showWarningMessage('No paths listed.'); }
-					return;
+				// --- Lister Results Logic ---
 				case 'clearListerList':
-					// This command now clears BOTH the input list and the output list.
-					folderListInputText = ""; // Clear input state
-					listedContent = ""; // Clear output state
-					listedUniquePaths.clear(); // Clear unique paths tracker
+					// Clears folder input text, lister output state, and unique tracker
+					folderInputText = ''; // Clear text state
+					listedPathsGrouped = [];
+					listedUniquePaths.clear();
 					panel.webview.postMessage({ command: 'updateFolderListInput', text: '' }); // Update input textarea
-					panel.webview.postMessage({ command: 'updateListerList', text: '' }); // Update output textarea
-					panel.webview.postMessage({ command: 'listerClearSuccess' }); // Send feedback for output clear
-                    // Optionally send feedback for input clear as well, or keep it simple
-                    // panel.webview.postMessage({ command: 'folderListClearSuccess' });
+					panel.webview.postMessage({ command: 'updateListerList', groupedPaths: [] }); // Update output div
+					return;
+
+				// --- Common Handlers ---
+				case 'setRevealState':
+					if (message.section === 'collector') { revealCollectorState = message.state ?? false; }
+					else if (message.section === 'lister') { revealListerState = message.state ?? false; }
+					return;
+				case 'openPath':
+					{
+						const { path: prefixedPath, type, reveal } = message;
+						const targetUri = resolvePrefixedPath(prefixedPath);
+						if (targetUri) {
+							try {
+								if (type === 'file') {
+									await vscode.commands.executeCommand('vscode.open', targetUri, { preview: false });
+									if (reveal) { await vscode.commands.executeCommand('revealInExplorer', targetUri); }
+								} else if (type === 'folder') {
+									await vscode.commands.executeCommand('revealInExplorer', targetUri);
+								}
+							} catch (err) { console.error(`Error opening ${type} ${prefixedPath}:`, err); vscode.window.showErrorMessage(`Could not open ${type}: ${prefixedPath}`); }
+						} else { console.warn(`Could not resolve path: ${prefixedPath}`); vscode.window.showWarningMessage(`Could not resolve path: ${prefixedPath}`); }
+					}
+					return;
+				case 'copyToClipboard':
+					{
+						const textToCopy = message.text;
+						const feedbackCommand = message.feedbackCommand;
+						if (textToCopy) {
+							await vscode.env.clipboard.writeText(textToCopy);
+							if (feedbackCommand) { panel.webview.postMessage({ command: feedbackCommand }); }
+						} else { vscode.window.showWarningMessage('Nothing to copy.'); }
+					}
 					return;
 			}
 		},
 		undefined, context.subscriptions
 	);
 
-	// Send initial state if needed (though JS handles restore from vscode.getState)
-	// panel.webview.postMessage({ command: 'updateCollectorList', text: Array.from(collectedPaths).join('\n') });
-	// panel.webview.postMessage({ command: 'updateFolderListInput', text: folderListInputText });
-	// panel.webview.postMessage({ command: 'updateListerList', text: listedContent });
+	// Send initial state
+	panel.webview.postMessage({ command: 'updateCollectorList', paths: collectedPaths });
+	panel.webview.postMessage({ command: 'updateFolderListInput', text: folderInputText }); // Send initial folder input text
+	panel.webview.postMessage({ command: 'updateListerList', groupedPaths: listedPathsGrouped });
 
 	panel.onDidDispose(() => { console.log('File and Folder Collector panel disposed'); }, null, context.subscriptions);
 }
