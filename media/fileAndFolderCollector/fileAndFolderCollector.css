@@ -107,6 +107,14 @@ textarea {
     resize: vertical; /* Allow vertical resizing */
 }
 
+/* Specific styling for the folder list input textarea */
+#folder-list-input {
+    height: 7em; /* Fixed height for approx. 5 lines (5 * 1.4em) */
+    flex-grow: 0; /* Prevent auto-expansion */
+    flex-shrink: 0; /* Prevent shrinking */
+    /* Inherits resize: vertical from textarea */
+}
+
 /* Style the div to look like the old textarea */
 .results-display {
     width: 100%; /* Use 100% width */
@@ -130,6 +138,14 @@ textarea {
     padding: 1px 0; /* Small vertical padding for lines */
     margin: 0;
     line-height: 1.4; /* Adjust line spacing if needed */
+}
+
+/* Specific styling for the listed paths display */
+#listed-paths {
+    height: 14em; /* Fixed height for approx. 10 lines (10 * 1.4em) */
+    flex-grow: 0; /* Prevent auto-expansion */
+    flex-shrink: 0; /* Prevent shrinking */
+    /* Inherits overflow-y: auto and resize: vertical from .results-display */
 }
 
 /* Style for clickable paths */
