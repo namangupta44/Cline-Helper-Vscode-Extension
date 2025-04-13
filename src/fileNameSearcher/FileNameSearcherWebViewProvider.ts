@@ -9,7 +9,8 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
     private readonly _extensionUri: vscode.Uri;
     private lastSearchTerm: string = '';
     private lastMatchCase: boolean = false;
-    private lastResults: string = '';
+    // Store structured results instead of a single string
+    private lastSearchData: { folders: string[], files: { path: string, isOutside: boolean }[] } | null = null;
 
     constructor(extensionUri: vscode.Uri) {
         this._extensionUri = extensionUri;
@@ -39,7 +40,7 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                     command: 'restoreState',
                     term: this.lastSearchTerm,
                     matchCase: this.lastMatchCase,
-                    results: this.lastResults
+                    results: this.lastSearchData // Send structured data
                 });
             }
         });
@@ -66,11 +67,10 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
                 case 'clearSearch': // Handle message from webview clear button
                     this.lastSearchTerm = '';
                     this.lastMatchCase = false;
-                    this.lastResults = '';
-                    // Optional: If you want to ensure the view is cleared even if the user didn't clear it
-                    // webviewView.webview.postMessage({ command: 'updateResults', results: '' });
+                    this.lastSearchData = null; // Clear structured data
+                    // Optional: Clear view immediately if desired
+                    // webviewView.webview.postMessage({ command: 'updateResults', results: null });
                     return;
-
             }
         });
     }
@@ -83,50 +83,57 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
         if (!this._view) { return; } // View not ready
 
         if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
-            this.lastResults = "No workspace open.";
-            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
+            this.lastSearchData = { folders: [], files: [{ path: "No workspace open.", isOutside: false }] };
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
             return;
         }
 
         // If search term is empty, clear results and state
         if (!term) {
-            this.lastResults = '';
-            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
+            this.lastSearchData = null; // Clear results
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
             return;
         }
 
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri; // Use the first workspace folder
-        const foundFolders: string[] = [];
-        const foundFiles: string[] = [];
+        const foundFoldersPaths: string[] = []; // Store full paths for comparison
+        const foundFilesPaths: string[] = [];   // Store full paths for comparison
         const excludePatterns = ['**/node_modules/**', '**/.git/**']; // Add more if needed
 
         try {
-            await this.findMatchingEntriesRecursive(workspaceRoot, term, matchCase, foundFolders, foundFiles, excludePatterns);
+            // Find all matching entries first
+            await this.findMatchingEntriesRecursive(workspaceRoot, term, matchCase, foundFoldersPaths, foundFilesPaths, excludePatterns);
 
-            let resultsString = "";
-            if (foundFolders.length > 0) {
-                resultsString += "--- Folders ---\n";
-                resultsString += foundFolders.map(p => `@/${p.replace(/\\/g, '/')}`).join('\n'); // Prefix and format
-                resultsString += "\n"; // Add space before files section if folders exist
-            }
-            if (foundFiles.length > 0) {
-                 if (resultsString !== "") { resultsString += "\n"; } // Add blank line separator if folders were found
-                resultsString += "--- Files ---\n";
-                resultsString += foundFiles.map(p => `@/${p.replace(/\\/g, '/')}`).join('\n'); // Prefix and format
+            // Format paths and determine if files are outside folders
+            const formattedFolders = foundFoldersPaths.map(p => `@/${p.replace(/\\/g, '/')}`);
+            const formattedFiles = foundFilesPaths.map(filePath => {
+                const formattedPath = `@/${filePath.replace(/\\/g, '/')}`;
+                // Check if the file path starts with any of the found folder paths + separator
+                const isOutside = !foundFoldersPaths.some(folderPath =>
+                    filePath.startsWith(folderPath + path.sep) || filePath.startsWith(folderPath + '/') // Handle both separators
+                );
+                return { path: formattedPath, isOutside: isOutside };
+            });
+
+            // Prepare structured data for the webview
+            const searchData: { folders: string[], files: { path: string, isOutside: boolean }[] } = {
+                folders: formattedFolders,
+                files: formattedFiles
+            };
+
+            // Add a message if nothing was found
+            if (searchData.folders.length === 0 && searchData.files.length === 0) {
+                 searchData.files.push({ path: "No matching files or folders found.", isOutside: false });
             }
 
-            if (resultsString === "") {
-                resultsString = "No matching files or folders found.";
-            }
-
-            this.lastResults = resultsString; // Store the results
-            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
+            this.lastSearchData = searchData; // Store the structured results
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
 
         } catch (error) {
             console.error("Error during file search:", error);
             vscode.window.showErrorMessage(`Error searching files: ${error}`);
-            this.lastResults = "Error during search."; // Store error state
-            this._view.webview.postMessage({ command: 'updateResults', results: this.lastResults });
+            this.lastSearchData = { folders: [], files: [{ path: "Error during search.", isOutside: false }] }; // Store error state
+            this._view.webview.postMessage({ command: 'updateResults', results: this.lastSearchData });
         }
     }
 
@@ -227,7 +234,7 @@ export class FileNameSearcherWebViewProvider implements vscode.WebviewViewProvid
 
                     <div id="results-container">
                         <h3>Results:</h3>
-                        <textarea id="results-area" readonly rows="10"></textarea>
+                        <div id="results-area" class="results-display"></div> <!-- Changed textarea to div -->
                         <div class="button-group"> <!-- New button group -->
                             <button id="copy-button">Copy</button>
                             <button id="clear-button">Clear</button>
