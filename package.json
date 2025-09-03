@@ -1,13 +1,28 @@
 {
-  "name": "get-open-files",
-  "displayName": "get-open-files",
-  "description": "Gets the relative paths of all open files in VS Code.",
-  "version": "0.0.1",
+  "name": "cline-helper",
+  "displayName": "Cline Helper",
+  "publisher": "namangupta",
+  "version": "0.1.0",
+  "description": "Helpful commands/utilities for Cline.",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other"
+  ],
+  "icon": "media/logo_128x128.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/namangupta44/Cline-Helper-Vscode-Extension"
+  },
+  "bugs": {
+    "url": "https://github.com/namangupta44/Cline-Helper-Vscode-Extension/issues"
+  },
+  "homepage": "https://github.com/namangupta44/Cline-Helper-Vscode-Extension#readme",
+  "keywords": [
+    "cline",
+    "helper",
+    "utilities"
   ],
   "activationEvents": [
     "onView:list-open-files-view",
@@ -58,7 +73,12 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "build": "tsc -p .",
+    "package": "vsce package",
+    "publish:patch": "vsce publish patch",
+    "publish:minor": "vsce publish minor",
+    "publish:major": "vsce publish major"
   },
   "devDependencies": {
     "@types/vscode": "^1.99.0",
