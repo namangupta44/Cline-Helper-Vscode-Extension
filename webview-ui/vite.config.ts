@@ -17,12 +17,10 @@ export default defineConfig({
     target: 'es2020',
     rollupOptions: {
       input: {
-        listOpenFiles: 'src/main-listOpenFiles.tsx',
-        fileNameSearcher: 'src/main-fileNameSearcher.tsx',
-        fileAndFolderCollector: 'src/main-fileAndFolderCollector.tsx',
+        main: 'src/main.tsx',
       },
       output: {
-        entryFileNames: 'assets/[name].js',     // stable per-view names
+        entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name][extname]',
       },

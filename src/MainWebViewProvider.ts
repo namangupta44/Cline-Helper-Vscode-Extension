@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { getWebviewHtml } from '../webview';
-import { ToExtension } from '../shared/messages';
-import { getOpenFiles } from '../util/getOpenFiles';
+import { getWebviewHtml } from './webview';
+import { ToExtension, SearchResult } from './shared/messages';
+import { getOpenFiles } from './util/getOpenFiles';
 
-export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'list-open-files-view';
+export class MainWebViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'main-view';
 
   private _view?: vscode.WebviewView;
 
@@ -24,8 +24,7 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
 
     webviewView.webview.html = getWebviewHtml(
       webviewView.webview,
-      this._extensionUri,
-      'listOpenFiles'
+      this._extensionUri
     );
 
     webviewView.webview.onDidReceiveMessage(async (msg: ToExtension) => {
@@ -48,6 +47,15 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
       this._view.webview.postMessage({
         type: 'init',
         payload: { files },
+      });
+    }
+  }
+
+  public updateResults(results: SearchResult[]) {
+    if (this._view) {
+      this._view.webview.postMessage({
+        type: 'searchResults',
+        items: results,
       });
     }
   }

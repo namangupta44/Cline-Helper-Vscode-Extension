@@ -25,43 +25,25 @@
     "utilities"
   ],
   "activationEvents": [
-    "onView:list-open-files-view",
-    "onCommand:get-open-files.openFileAndFolderCollector",
-    "onView:fileNameSearcher.view"
+    "onView:main-view"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "get-open-files.openFileAndFolderCollector",
-        "title": "Open File and Folder Collector"
-      },
-      {
-        "command": "fileNameSearcher.showView",
-        "title": "Show File Name Searcher"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "get-open-files-sidebar",
-          "title": "Open Files List",
+          "id": "cline-helper-sidebar",
+          "title": "Cline Helper",
           "icon": "$(list-unordered)"
         }
       ]
     },
     "views": {
-      "get-open-files-sidebar": [
+      "cline-helper-sidebar": [
         {
-          "id": "list-open-files-view",
-          "name": "Open Files List",
-          "contextualTitle": "Open Files List",
-          "type": "webview"
-        },
-        {
-          "id": "fileNameSearcher.view",
-          "name": "File Name Searcher",
-          "contextualTitle": "File Name Searcher",
+          "id": "main-view",
+          "name": "Cline Helper",
+          "contextualTitle": "Cline Helper",
           "type": "webview"
         }
       ]

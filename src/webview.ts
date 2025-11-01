@@ -2,14 +2,13 @@ import * as vscode from 'vscode';
 
 export function getWebviewHtml(
   webview: vscode.Webview,
-  extensionUri: vscode.Uri,
-  viewName: 'listOpenFiles' | 'fileNameSearcher' | 'fileAndFolderCollector'
+  extensionUri: vscode.Uri
 ) {
   const nonce = getNonce();
   const uri = (p: string) =>
     webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'webview-ui', 'dist', p));
 
-  const scriptUri = uri(`assets/${viewName}.js`);
+  const scriptUri = uri('assets/main.js');
   const styleUri = uri('assets/globals.css');
 
   return /* html */ `
@@ -25,7 +24,7 @@ export function getWebviewHtml(
                    font-src ${webview.cspSource};" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link nonce="${nonce}" rel="stylesheet" href="${styleUri}">
-        <title>${viewName}</title>
+        <title>Cline Helper</title>
       </head>
       <body>
         <div id="root"></div>
