@@ -1,4 +1,4 @@
-import { VSCodeButton, VSCodeDivider } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { useListStore } from './store';
 import { vscode } from '../../platform/vscode';
 
@@ -10,13 +10,12 @@ export function ListOpenFiles() {
   };
 
   return (
-    <main className="list-open-files-container">
+    <main>
       <h1>Open Files</h1>
       <VSCodeButton onClick={() => vscode.postMessage({ type: 'search', query: '' })}>
         Get Open Files
       </VSCodeButton>
-      <VSCodeDivider />
-      <section>
+      <section className="results-container">
         {files.length === 0 ? (
           <p>No open files found.</p>
         ) : (

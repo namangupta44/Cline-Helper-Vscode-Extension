@@ -17,21 +17,22 @@ export function FileNameSearcher() {
   };
 
   return (
-    <main className="file-name-searcher-container">
+    <main>
       <h1>File Name Searcher</h1>
-      <VSCodeTextField
-        value={searchTerm}
-        onInput={(e: any) => setSearchTerm(e.target.value)}
-        placeholder="Enter filename part..."
-      />
-      <VSCodeCheckbox
-        checked={matchCase}
-        onChange={(e: any) => setMatchCase(e.target.checked)}
-      >
-        Match Case
-      </VSCodeCheckbox>
-      <section>
-        <h3>Results:</h3>
+      <div className="search-container">
+        <VSCodeTextField
+          value={searchTerm}
+          onInput={(e: any) => setSearchTerm(e.target.value)}
+          placeholder="Enter filename part..."
+        />
+        <VSCodeCheckbox
+          checked={matchCase}
+          onChange={(e: any) => setMatchCase(e.target.checked)}
+        >
+          Match Case
+        </VSCodeCheckbox>
+      </div>
+      <section className="results-container">
         {results.length === 0 ? (
           <p>No results found.</p>
         ) : (

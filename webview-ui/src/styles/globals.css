@@ -2,7 +2,10 @@ body {
   background-color: var(--vscode-sideBar-background);
   color: var(--vscode-sideBar-foreground);
   font-family: var(--vscode-font-family);
-  padding: 1rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 ul {
@@ -14,18 +17,32 @@ ul {
 a {
   color: var(--vscode-textLink-foreground);
   text-decoration: none;
+  display: block;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  background-color: var(--vscode-list-hoverBackground);
 }
 
-.list-open-files-container {
-  background-color: rgb(236, 233, 29);
-  padding: 1rem;
+h1 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
 }
 
-.file-name-searcher-container {
-  background-color: rgb(11, 251, 31);
-  padding: 1rem;
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.results-container {
+  border: 1px solid var(--vscode-editorGroup-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  min-height: 5rem;
+  overflow-y: auto;
 }
