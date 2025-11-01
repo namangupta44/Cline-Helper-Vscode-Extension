@@ -7,8 +7,7 @@ export function ListOpenFiles() {
   const { files, clearFiles } = useListStore();
 
   const handleOpenFile = (e: MouseEvent<HTMLSpanElement>, file: string) => {
-    e.preventDefault();
-    if (e.metaKey || e.ctrlKey) {
+    if (e.metaKey) {
       vscode.postMessage({ type: 'openFile', path: file });
     }
   };
@@ -39,8 +38,9 @@ export function ListOpenFiles() {
             {files.map((file) => (
               <li key={file}>
                 <span
+                  className="file-link"
                   onClick={(e) => handleOpenFile(e, file)}
-                  style={{ cursor: 'pointer' }}
+                  draggable="false"
                 >
                   {file}
                 </span>

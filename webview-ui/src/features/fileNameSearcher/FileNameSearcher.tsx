@@ -39,7 +39,7 @@ export function FileNameSearcher() {
           <ul>
             {results.map((result) => (
               <li key={result.relativePath}>
-                <a href="#" onClick={() => handleOpenFile(result.relativePath)}>
+                <a href="#" className="file-link" onClick={() => handleOpenFile(result.relativePath)}>
                   {result.displayPath}
                 </a>
               </li>

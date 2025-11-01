@@ -9,24 +9,32 @@ body {
 }
 
 ul {
-  list-style: none;
-  padding: 0;
+  padding-left: 2em;
   margin: 0;
 }
 
 a,
 span[style*="cursor: pointer"] {
-  color: white;
+  color: var(--vscode-sideBar-foreground);
   text-decoration: none;
   display: block;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
 }
 
-a:hover,
-span[style*="cursor: pointer"]:hover {
+.file-link {
+  color: var(--vscode-sideBar-foreground);
   text-decoration: none;
-  background-color: var(--vscode-list-hoverBackground);
+  cursor: text;
+}
+
+.file-link:hover {
+  text-decoration: underline;
+}
+
+.file-link:focus,
+.file-link:focus-visible {
+  outline: none;
 }
 
 h1 {

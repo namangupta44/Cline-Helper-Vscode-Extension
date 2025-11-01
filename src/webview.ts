@@ -9,7 +9,7 @@ export function getWebviewHtml(
     webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'webview-ui', 'dist', p));
 
   const scriptUri = uri('assets/main.js');
-  const styleUri = uri('assets/globals.css');
+  const styleUri = uri('assets/main.css');
 
   return /* html */ `
     <!doctype html>
