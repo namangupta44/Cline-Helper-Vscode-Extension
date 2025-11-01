@@ -75,7 +75,8 @@ function simpleGlobMatch(pathStr: string, pattern: string): boolean {
 
 export async function performWorkspaceSearch(
   term: string,
-  matchCase: boolean
+  matchCase: boolean,
+  additionalExclude: string[] = []
 ): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
 
@@ -95,7 +96,11 @@ export async function performWorkspaceSearch(
 
   const foundFoldersPaths: string[] = [];
   const foundFilesPaths: string[] = [];
-  const excludePatterns = ['**/node_modules/**', '**/.git/**'];
+  const baseExclude = ['**/node_modules/**', '**/.git/**'];
+  const excludePatterns = [
+    ...baseExclude,
+    ...additionalExclude.map((p) => `**/${p}/**`),
+  ];
 
   try {
     for (const folder of vscode.workspace.workspaceFolders) {

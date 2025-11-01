@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export function getOpenFiles(): string[] {
+export function getOpenFiles(excludePatterns: string[] = []): string[] {
   const tabs: vscode.Uri[] = [];
   for (const tabGroup of vscode.window.tabGroups.all) {
     for (const tab of tabGroup.tabs) {
@@ -11,5 +11,6 @@ export function getOpenFiles(): string[] {
   }
   return tabs
     .filter((uri) => uri.scheme === 'file' || uri.scheme === 'untitled')
-    .map((uri) => vscode.workspace.asRelativePath(uri));
+    .map((uri) => vscode.workspace.asRelativePath(uri))
+    .filter((path) => !excludePatterns.some((p) => path.startsWith(p)));
 }

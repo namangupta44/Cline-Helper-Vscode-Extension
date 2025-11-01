@@ -14,7 +14,9 @@ export type ToExtension =
   | { type: 'getOpenFiles' }
   | { type: 'addDroppedPaths'; uris: string[] }
   | { type: 'listFolderContents'; paths: string[] }
-  | { type: 'openInEditor' };
+  | { type: 'openInEditor' }
+  | { type: 'getSettings' }
+  | { type: 'saveSettings'; settings: { [key: string]: string } };
 
 export type SearchResult = {
   type: 'folder' | 'file';
@@ -27,4 +29,6 @@ export type ToWebview =
   | { type: 'init'; payload: { files: string[] } }
   | { type: 'searchResults'; items: SearchResult[] }
   | { type: 'updateCollectedPaths'; paths: PathInfo[] }
-  | { type: 'updateListedPaths'; groupedResults: ListedGroup[] };
+  | { type: 'updateListedPaths'; groupedResults: ListedGroup[] }
+  | { type: 'showSettings' }
+  | { type: 'loadSettings'; settings: { [key: string]: string } };

@@ -11,7 +11,10 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly _context: vscode.ExtensionContext
+  ) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -28,22 +31,33 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.getHtml(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (msg: ToExtension) => {
+      const settings = this._context.workspaceState.get('clineHelper.settings', {}) as {
+        [key: string]: string;
+      };
+
       if (msg.type === 'getOpenFiles') {
-        this.updateFileList(getOpenFiles());
+        const excludePatterns = (settings.openFilesExcludeText || '').split('\n').filter(Boolean);
+        this.updateFileList(getOpenFiles(excludePatterns));
       } else if (msg.type === 'openFile') {
         openPath(msg.path, msg.fileType);
       } else if (msg.type === 'search') {
-        const results = await performWorkspaceSearch(msg.query, msg.matchCase);
+        const excludePatterns = (settings.searcherExcludeText || '').split('\n').filter(Boolean);
+        const results = await performWorkspaceSearch(msg.query, msg.matchCase, excludePatterns);
         this.updateResults(results);
       } else if (msg.type === 'addDroppedPaths') {
         const pathInfos = await processDroppedUris(msg.uris);
         // In a real app, you'd likely merge this with existing collected paths
         this.updateCollectedPaths(pathInfos);
       } else if (msg.type === 'listFolderContents') {
-        const groupedResults = await listFolderContents(msg.paths);
+        const excludePatterns = (settings.collectorExcludeText || '').split('\n').filter(Boolean);
+        const groupedResults = await listFolderContents(msg.paths, excludePatterns);
         this.updateListedPaths(groupedResults);
       } else if (msg.type === 'openInEditor') {
         vscode.commands.executeCommand('cline-helper.openInEditor');
+      } else if (msg.type === 'getSettings') {
+        this.loadAndSendSettings();
+      } else if (msg.type === 'saveSettings') {
+        this._context.workspaceState.update('clineHelper.settings', msg.settings);
       }
     });
   }
@@ -86,5 +100,18 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
 
   public getHtml(webview: vscode.Webview): string {
     return getWebviewHtml(webview, this._extensionUri);
+  }
+
+  public showSettings() {
+    if (this._view) {
+      this._view.webview.postMessage({ type: 'showSettings' });
+    }
+  }
+
+  private loadAndSendSettings() {
+    if (this._view) {
+      const settings = this._context.workspaceState.get('clineHelper.settings', {});
+      this._view.webview.postMessage({ type: 'loadSettings', settings });
+    }
   }
 }

@@ -18,16 +18,27 @@ export async function processDroppedUris(uriStrings: string[]): Promise<PathInfo
   return pathInfos;
 }
 
-async function findFilesInDir(dirUri: vscode.Uri): Promise<vscode.Uri[]> {
+async function findFilesInDir(
+  dirUri: vscode.Uri,
+  excludePatterns: string[]
+): Promise<vscode.Uri[]> {
+  const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
+  if (excludePatterns.some((p) => relativePathForExclusion.startsWith(p))) {
+    return [];
+  }
+
   let files: vscode.Uri[] = [];
   try {
     const entries = await vscode.workspace.fs.readDirectory(dirUri);
     for (const [name, type] of entries) {
       const entryUri = vscode.Uri.joinPath(dirUri, name);
       if (type === vscode.FileType.Directory) {
-        files = files.concat(await findFilesInDir(entryUri));
+        files = files.concat(await findFilesInDir(entryUri, excludePatterns));
       } else if (type === vscode.FileType.File) {
-        files.push(entryUri);
+        const relativePath = vscode.workspace.asRelativePath(entryUri, false);
+        if (!excludePatterns.some((p) => relativePath.startsWith(p))) {
+          files.push(entryUri);
+        }
       }
     }
   } catch (e) {
@@ -36,7 +47,10 @@ async function findFilesInDir(dirUri: vscode.Uri): Promise<vscode.Uri[]> {
   return files;
 }
 
-export async function listFolderContents(folderPaths: string[]): Promise<ListedGroup[]> {
+export async function listFolderContents(
+  folderPaths: string[],
+  excludePatterns: string[] = []
+): Promise<ListedGroup[]> {
   const listedPathsGrouped: ListedGroup[] = [];
   const listedUniquePaths = new Set<string>();
 
@@ -54,7 +68,7 @@ export async function listFolderContents(folderPaths: string[]): Promise<ListedG
         continue;
       }
 
-      const filesInDir = await findFilesInDir(folderUri);
+      const filesInDir = await findFilesInDir(folderUri, excludePatterns);
 
       filesInDir.forEach((fileUri) => {
         const relativePath = vscode.workspace.asRelativePath(fileUri, false);

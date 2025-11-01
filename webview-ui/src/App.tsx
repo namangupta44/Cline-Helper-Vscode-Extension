@@ -3,11 +3,18 @@ import {
   VSCodePanelTab,
   VSCodePanelView,
 } from '@vscode/webview-ui-toolkit/react';
+import { useEffect } from 'react';
 import { ListOpenFiles } from './features/listOpenFiles/ListOpenFiles';
 import { FileNameSearcher } from './features/fileNameSearcher/FileNameSearcher';
 import { FileAndFolderCollector } from './features/fileAndFolderCollector/FileAndFolderCollector';
+import { Settings } from './features/settings/Settings';
+import { vscode } from './platform/vscode';
 
 function App() {
+  useEffect(() => {
+    vscode.postMessage({ type: 'getSettings' });
+  }, []);
+
   return (
     <main>
       <VSCodePanels>
@@ -24,6 +31,7 @@ function App() {
           <FileAndFolderCollector />
         </VSCodePanelView>
       </VSCodePanels>
+      <Settings />
     </main>
   );
 }
