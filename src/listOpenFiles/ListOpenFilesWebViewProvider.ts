@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { getWebviewHtml } from '../webview';
+import { ToExtension } from '../shared/messages';
+import { getOpenFiles } from '../util/getOpenFiles';
 
 export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'list-open-files-view';
@@ -25,6 +27,20 @@ export class ListOpenFilesWebViewProvider implements vscode.WebviewViewProvider 
       this._extensionUri,
       'listOpenFiles'
     );
+
+    webviewView.webview.onDidReceiveMessage(async (msg: ToExtension) => {
+      if (msg.type === 'getOpenFiles') {
+        this.updateFileList(getOpenFiles());
+      } else if (msg.type === 'openFile') {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders) {
+          const workspaceRoot = workspaceFolders[0].uri;
+          const fileUri = vscode.Uri.joinPath(workspaceRoot, msg.path);
+          const doc = await vscode.workspace.openTextDocument(fileUri);
+          await vscode.window.showTextDocument(doc, { preview: false });
+        }
+      }
+    });
   }
 
   public updateFileList(files: string[]) {

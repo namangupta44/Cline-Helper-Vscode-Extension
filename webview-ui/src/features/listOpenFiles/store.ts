@@ -9,12 +9,14 @@ type State = {
 
 type Actions = {
   setFiles: (files: string[]) => void;
+  clearFiles: () => void;
 };
 
 export const useListStore = create<State & Actions>((set) => ({
   files: [],
   loading: false,
   setFiles: (files) => set({ files }),
+  clearFiles: () => set({ files: [] }),
 }));
 
 // Listen for messages from the extension

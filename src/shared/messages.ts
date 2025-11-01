@@ -1,6 +1,7 @@
 export type ToExtension =
   | { type: 'openFile'; path: string }
-  | { type: 'search'; query: string };
+  | { type: 'search'; query: string }
+  | { type: 'getOpenFiles' };
 
 export type SearchResult = {
   type: 'folder' | 'file';
