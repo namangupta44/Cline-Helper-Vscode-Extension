@@ -56,3 +56,70 @@ h1 {
   min-height: 5rem;
   overflow-y: auto;
 }
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 5rem;
+}
+
+.result-heading {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+  font-size: 1.1em;
+}
+
+.outside-file {
+  color: var(--vscode-errorForeground);
+}
+
+.collector-container {
+  display: flex;
+  gap: 1rem;
+  height: 100vh;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.drop-zone {
+  border: 2px dashed var(--vscode-input-border);
+  padding: 1rem;
+  text-align: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.drop-zone.drag-over {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  border-color: var(--vscode-focusBorder);
+}
+
+.results-display {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid var(--vscode-editorGroup-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.app-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}

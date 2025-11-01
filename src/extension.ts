@@ -8,6 +8,23 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(MainWebViewProvider.viewType, mainProvider)
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('cline-helper.openInEditor', () => {
+      const panel = vscode.window.createWebviewPanel(
+        'main-view-editor',
+        'Cline Helper',
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          localResourceRoots: [
+            vscode.Uri.joinPath(context.extensionUri, 'webview-ui', 'dist'),
+          ],
+        }
+      );
+      panel.webview.html = mainProvider.getHtml(panel.webview);
+    })
+  );
 }
 
 export function deactivate() {}

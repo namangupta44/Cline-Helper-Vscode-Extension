@@ -25,10 +25,17 @@
     "utilities"
   ],
   "activationEvents": [
-    "onView:main-view"
+    "onView:main-view",
+    "onCommand:cline-helper.openInEditor"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "cline-helper.openInEditor",
+        "title": "Open in Editor"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

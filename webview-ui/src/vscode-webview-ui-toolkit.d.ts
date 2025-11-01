@@ -20,6 +20,10 @@ declare module '@vscode/webview-ui-toolkit/react' {
     readonly?: boolean;
   }>;
 
+  export const VSCodeTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>>;
+
+  export const VSCodeProgressRing: React.FC<React.HTMLAttributes<HTMLDivElement>>;
+
   export const VSCodePanels: React.FC<React.HTMLAttributes<HTMLDivElement>>;
   export const VSCodePanelTab: React.FC<React.HTMLAttributes<HTMLDivElement> & { id: string }>;
   export const VSCodePanelView: React.FC<React.HTMLAttributes<HTMLDivElement> & { id: string }>;
