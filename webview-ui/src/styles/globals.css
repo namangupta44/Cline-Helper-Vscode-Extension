@@ -1,0 +1,31 @@
+body {
+  background-color: var(--vscode-sideBar-background);
+  color: var(--vscode-sideBar-foreground);
+  font-family: var(--vscode-font-family);
+  padding: 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: var(--vscode-textLink-foreground);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.list-open-files-container {
+  background-color: rgb(236, 233, 29);
+  padding: 1rem;
+}
+
+.file-name-searcher-container {
+  background-color: rgb(11, 251, 31);
+  padding: 1rem;
+}
