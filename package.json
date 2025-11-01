@@ -26,14 +26,21 @@
   ],
   "activationEvents": [
     "onView:main-view",
-    "onCommand:cline-helper.openInEditor"
+    "onCommand:cline-helper.openInEditor",
+    "onCommand:cline-helper.openSettings"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "cline-helper.openInEditor",
-        "title": "Open in Editor"
+        "title": "Open in Editor",
+        "icon": "$(multiple-windows)"
+      },
+      {
+        "command": "cline-helper.openSettings",
+        "title": "Settings",
+        "icon": "$(gear)"
       }
     ],
     "viewsContainers": {
@@ -52,6 +59,20 @@
           "name": "Cline Helper",
           "contextualTitle": "Cline Helper",
           "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "cline-helper.openInEditor",
+          "when": "view == main-view",
+          "group": "navigation"
+        },
+        {
+          "command": "cline-helper.openSettings",
+          "when": "view == main-view",
+          "group": "navigation"
         }
       ]
     }

@@ -117,9 +117,3 @@ h1 {
   display: flex;
   gap: 0.5rem;
 }
-
-.app-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.5rem;
-}
