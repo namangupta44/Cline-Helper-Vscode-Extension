@@ -46,7 +46,6 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
         this.updateResults(results);
       } else if (msg.type === 'addDroppedPaths') {
         const pathInfos = await processDroppedUris(msg.uris);
-        // In a real app, you'd likely merge this with existing collected paths
         this.updateCollectedPaths(pathInfos);
       } else if (msg.type === 'listFolderContents') {
         const excludePatterns = (settings.collectorExcludeText || '').split('\n').filter(Boolean);

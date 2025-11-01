@@ -11,6 +11,12 @@ const DropZone: React.FC<{
 }> = ({ onDrop, children }) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -23,22 +29,44 @@ const DropZone: React.FC<{
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
-    if (e.dataTransfer) {
-      let uriList = e.dataTransfer.getData('text/uri-list');
-      if (uriList) {
-        const uris = uriList.split('\n').map((u) => u.trim()).filter(Boolean);
-        onDrop(uris);
+
+    if (!e.dataTransfer) {
+      return;
+    }
+
+    const uris: string[] = [];
+    if (e.dataTransfer.items) {
+      for (let i = 0; i < e.dataTransfer.items.length; i++) {
+        const item = e.dataTransfer.items[i];
+        if (item.kind === 'string') {
+          const data = await new Promise<string>((resolve) => item.getAsString(resolve));
+          if (data.startsWith('file://') || data.startsWith('vscode-remote://')) {
+            uris.push(...data.split('\n').map((u) => u.trim()).filter(Boolean));
+          }
+        }
       }
+    }
+
+    if (uris.length === 0) {
+      const uriList = e.dataTransfer.getData('text/uri-list');
+      if (uriList) {
+        uris.push(...uriList.split('\n').map((u) => u.trim()).filter(Boolean));
+      }
+    }
+
+    if (uris.length > 0) {
+      onDrop(uris);
     }
   };
 
   return (
     <div
       className={`drop-zone ${isDragOver ? 'drag-over' : ''}`}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}

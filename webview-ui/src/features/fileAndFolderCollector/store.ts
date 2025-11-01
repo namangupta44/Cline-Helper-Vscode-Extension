@@ -32,7 +32,7 @@ export const useCollectorStore = create<State & Actions>((set) => ({
 
 bus.subscribe((message: ToWebview) => {
   if (message.type === 'updateCollectedPaths') {
-    useCollectorStore.getState().setCollectedPaths(message.paths);
+    useCollectorStore.getState().addCollectedPaths(message.paths);
   } else if (message.type === 'updateListedPaths') {
     useCollectorStore.getState().setListedPathsGrouped(message.groupedResults);
   }
