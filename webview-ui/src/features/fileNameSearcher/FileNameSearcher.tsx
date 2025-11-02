@@ -29,7 +29,7 @@ export function FileNameSearcher() {
   }, [results]);
 
   return (
-    <main>
+    <main className="searcher-container">
       <h1>File Name Searcher</h1>
       <div className="search-container">
         <VSCodeTextField

@@ -17,7 +17,7 @@ export function ListOpenFiles() {
   };
 
   return (
-    <main>
+    <main className="openfiles-container">
       <h1>Open Files</h1>
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <VSCodeButton onClick={() => vscode.postMessage({ type: 'getOpenFiles' })}>

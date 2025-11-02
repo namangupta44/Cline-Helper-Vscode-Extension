@@ -160,3 +160,13 @@ h1 {
 .settings-modal h2 {
   margin-top: 0;
 }
+
+.searcher-container {
+  margin: 0 0.5rem;
+  width: 100%;
+}
+
+.openfiles-container {
+  margin: 0 0.5rem;
+  width: 100%;
+}

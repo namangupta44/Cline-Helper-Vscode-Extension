@@ -136,7 +136,7 @@ export function FileAndFolderCollector() {
       <section className="panel">
         <h2>List Folder Contents</h2>
         <DropZone onDrop={handleDropLister}>
-          <p>Drag folders here to add, or paste paths below</p>
+          <p>Drag folders here, or paste paths below</p>
         </DropZone>
         <h3>Folders to List:</h3>
         <VSCodeTextArea
