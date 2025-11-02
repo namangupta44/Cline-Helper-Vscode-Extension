@@ -177,3 +177,10 @@ h1 {
   margin: 0 0.5rem;
   width: 100%;
 }
+
+.settings-panel-view {
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

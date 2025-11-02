@@ -24,13 +24,19 @@ export class WebviewMessageHandler {
     };
 
     if (msg.type === 'getOpenFiles') {
-      const excludePatterns = (settings.openFilesExcludeText || '').split('\n').filter(Boolean);
+      const excludePatterns =
+        settings.isExcludeEnabled === false
+          ? []
+          : (settings.openFilesExcludeText || '').split('\n').filter(Boolean);
       const files = getOpenFiles(excludePatterns, settings.isFullPathEnabled);
       this._webview.postMessage({ type: 'init', payload: { files } });
     } else if (msg.type === 'openFile') {
       openPath(msg.path, msg.fileType);
     } else if (msg.type === 'search') {
-      const excludePatterns = (settings.searcherExcludeText || '').split('\n').filter(Boolean);
+      const excludePatterns =
+        settings.isExcludeEnabled === false
+          ? []
+          : (settings.searcherExcludeText || '').split('\n').filter(Boolean);
       const results = await performWorkspaceSearch(
         msg.query,
         msg.matchCase,
@@ -48,7 +54,10 @@ export class WebviewMessageHandler {
         this._webview.postMessage({ type: 'appendToListerInput', paths: folderPaths });
       }
     } else if (msg.type === 'listFolderContents') {
-      const excludePatterns = (settings.collectorExcludeText || '').split('\n').filter(Boolean);
+      const excludePatterns =
+        settings.isExcludeEnabled === false
+          ? []
+          : (settings.collectorExcludeText || '').split('\n').filter(Boolean);
       const groupedResults = await listFolderContents(
         msg.paths,
         excludePatterns,

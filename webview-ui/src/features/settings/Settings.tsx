@@ -3,6 +3,9 @@ import {
   VSCodeCheckbox,
   VSCodeTextArea,
   VSCodeTextField,
+  VSCodePanels,
+  VSCodePanelTab,
+  VSCodePanelView,
 } from '@vscode/webview-ui-toolkit/react';
 import { useSettingsStore } from './store';
 import { vscode } from '../../platform/vscode';
@@ -17,6 +20,7 @@ export function Settings() {
     isPrefixEnabled,
     prefixText,
     isFullPathEnabled,
+    isExcludeEnabled,
     setSettingsText,
     setSettingsToggle,
   } = useSettingsStore();
@@ -35,6 +39,7 @@ export function Settings() {
         isPrefixEnabled,
         prefixText,
         isFullPathEnabled,
+        isExcludeEnabled,
       },
     });
     hideSettings();
@@ -50,56 +55,79 @@ export function Settings() {
             Cancel
           </VSCodeButton>
         </div>
-        <section>
-          <h3>General</h3>
-          <VSCodeCheckbox
-            checked={isFullPathEnabled}
-            onChange={(e: any) => setSettingsToggle('isFullPathEnabled', e.target.checked)}
-          >
-            Show Full Path
-          </VSCodeCheckbox>
-          <div className="prefix-container">
-            <VSCodeCheckbox
-              checked={isPrefixEnabled}
-              onChange={(e: any) => setSettingsToggle('isPrefixEnabled', e.target.checked)}
-            >
-              Add Prefix
-            </VSCodeCheckbox>
-            <VSCodeTextField
-              value={prefixText}
-              onInput={(e: any) => setSettingsText('prefixText', e.target.value)}
-              placeholder="Enter prefix..."
-              disabled={!isPrefixEnabled}
-            />
-          </div>
-        </section>
-        <section>
-          <h3>Exclude from COLLECTOR</h3>
-          <VSCodeTextArea
-            value={collectorExcludeText}
-            onInput={(e: any) => setSettingsText('collectorExcludeText', e.target.value)}
-            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
-            rows={5}
-          />
-        </section>
-        <section>
-          <h3>Exclude from SEARCHER</h3>
-          <VSCodeTextArea
-            value={searcherExcludeText}
-            onInput={(e: any) => setSettingsText('searcherExcludeText', e.target.value)}
-            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
-            rows={5}
-          />
-        </section>
-        <section>
-          <h3>Exclude from OPEN FILES</h3>
-          <VSCodeTextArea
-            value={openFilesExcludeText}
-            onInput={(e: any) => setSettingsText('openFilesExcludeText', e.target.value)}
-            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
-            rows={5}
-          />
-        </section>
+        <VSCodePanels>
+          <VSCodePanelTab id="tab-general">GENERAL</VSCodePanelTab>
+          <VSCodePanelTab id="tab-exclude">EXCLUDE</VSCodePanelTab>
+          <VSCodePanelView id="view-general">
+            <div className="settings-panel-view">
+              <section>
+                <h3>General</h3>
+                <VSCodeCheckbox
+                checked={isFullPathEnabled}
+                onChange={(e: any) => setSettingsToggle('isFullPathEnabled', e.target.checked)}
+              >
+                Show Full Path
+              </VSCodeCheckbox>
+              <div className="prefix-container">
+                <VSCodeCheckbox
+                  checked={isPrefixEnabled}
+                  onChange={(e: any) => setSettingsToggle('isPrefixEnabled', e.target.checked)}
+                >
+                  Add Prefix
+                </VSCodeCheckbox>
+                <VSCodeTextField
+                  value={prefixText}
+                  onInput={(e: any) => setSettingsText('prefixText', e.target.value)}
+                  placeholder="Enter prefix..."
+                  disabled={!isPrefixEnabled}
+                />
+              </div>
+              </section>
+            </div>
+          </VSCodePanelView>
+          <VSCodePanelView id="view-exclude">
+            <div className="settings-panel-view">
+              <section>
+                <VSCodeCheckbox
+                  checked={isExcludeEnabled}
+                onChange={(e: any) => setSettingsToggle('isExcludeEnabled', e.target.checked)}
+              >
+                Enable Exclude Filters
+              </VSCodeCheckbox>
+            </section>
+            <section>
+              <h3>Exclude from COLLECTOR</h3>
+              <VSCodeTextArea
+                value={collectorExcludeText}
+                onInput={(e: any) => setSettingsText('collectorExcludeText', e.target.value)}
+                placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
+                rows={5}
+                disabled={!isExcludeEnabled}
+              />
+            </section>
+            <section>
+              <h3>Exclude from SEARCHER</h3>
+              <VSCodeTextArea
+                value={searcherExcludeText}
+                onInput={(e: any) => setSettingsText('searcherExcludeText', e.target.value)}
+                placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
+                rows={5}
+                disabled={!isExcludeEnabled}
+              />
+            </section>
+            <section>
+              <h3>Exclude from OPEN FILES</h3>
+              <VSCodeTextArea
+                value={openFilesExcludeText}
+                onInput={(e: any) => setSettingsText('openFilesExcludeText', e.target.value)}
+                placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
+                rows={5}
+                disabled={!isExcludeEnabled}
+              />
+              </section>
+            </div>
+          </VSCodePanelView>
+        </VSCodePanels>
       </div>
     </div>
   );

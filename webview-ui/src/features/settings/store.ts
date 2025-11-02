@@ -10,6 +10,7 @@ type State = {
   isPrefixEnabled: boolean;
   prefixText: string;
   isFullPathEnabled: boolean;
+  isExcludeEnabled: boolean;
 };
 
 type Actions = {
@@ -19,7 +20,10 @@ type Actions = {
     key: 'openFilesExcludeText' | 'searcherExcludeText' | 'collectorExcludeText' | 'prefixText',
     text: string
   ) => void;
-  setSettingsToggle: (key: 'isPrefixEnabled' | 'isFullPathEnabled', value: boolean) => void;
+  setSettingsToggle: (
+    key: 'isPrefixEnabled' | 'isFullPathEnabled' | 'isExcludeEnabled',
+    value: boolean
+  ) => void;
   loadSettings: (settings: { [key: string]: any }) => void;
 };
 
@@ -31,6 +35,7 @@ export const useSettingsStore = create<State & Actions>((set) => ({
   isPrefixEnabled: false,
   prefixText: '',
   isFullPathEnabled: false,
+  isExcludeEnabled: true,
   showSettings: () => set({ isSettingsVisible: true }),
   hideSettings: () => set({ isSettingsVisible: false }),
   setSettingsText: (key, text) => set({ [key]: text }),
@@ -43,6 +48,7 @@ export const useSettingsStore = create<State & Actions>((set) => ({
       isPrefixEnabled: settings.isPrefixEnabled || false,
       prefixText: settings.prefixText || '',
       isFullPathEnabled: settings.isFullPathEnabled || false,
+      isExcludeEnabled: settings.isExcludeEnabled === false ? false : true,
     }),
 }));
 
