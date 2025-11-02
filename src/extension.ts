@@ -29,6 +29,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
       panel.webview.html = mainProvider.getHtml(panel.webview);
+      panel.webview.onDidReceiveMessage((msg) => {
+        mainProvider.handleMessage(msg, panel.webview);
+      });
     })
   );
 }
