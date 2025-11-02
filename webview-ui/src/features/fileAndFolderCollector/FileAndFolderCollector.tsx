@@ -109,8 +109,10 @@ export function FileAndFolderCollector() {
     return isPrefixEnabled ? `${prefixText}${path}` : path;
   };
 
-  const handleOpenFile = (path: string, type: 'file' | 'folder') => {
-    vscode.postMessage({ type: 'openFile', path, fileType: type });
+  const handleOpenFile = (e: React.MouseEvent, path: string, type: 'file' | 'folder') => {
+    if (e.metaKey || e.ctrlKey) {
+      vscode.postMessage({ type: 'openFile', path, fileType: type });
+    }
   };
 
   const handleCopy = (text: string) => {
@@ -130,7 +132,7 @@ export function FileAndFolderCollector() {
             <div
               key={p.relativePath}
               className="file-link"
-              onClick={() => handleOpenFile(p.relativePath, p.type)}
+              onClick={(e) => handleOpenFile(e, p.relativePath, p.type)}
             >
               {getDisplayPath(p)}
             </div>
@@ -168,7 +170,7 @@ export function FileAndFolderCollector() {
                 <div
                   key={f.relativePath}
                   className="file-link"
-                  onClick={() => handleOpenFile(f.relativePath, 'file')}
+                  onClick={(e) => handleOpenFile(e, f.relativePath, 'file')}
                 >
                   {getDisplayPath(f)}
                 </div>

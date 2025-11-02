@@ -14,7 +14,7 @@ export function ListOpenFiles() {
   };
 
   const handleOpenFile = (e: MouseEvent<HTMLSpanElement>, file: { relativePath: string }) => {
-    if (e.metaKey) {
+    if (e.metaKey || e.ctrlKey) {
       vscode.postMessage({ type: 'openFile', path: file.relativePath, fileType: 'file' });
     }
   };

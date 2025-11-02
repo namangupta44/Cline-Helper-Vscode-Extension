@@ -35,8 +35,10 @@ export function FileNameSearcher() {
     return isPrefixEnabled ? `${prefixText}${path}` : path;
   };
 
-  const handleOpenFile = (path: string, type: 'file' | 'folder') => {
-    vscode.postMessage({ type: 'openFile', path, fileType: type });
+  const handleOpenFile = (e: React.MouseEvent, path: string, type: 'file' | 'folder') => {
+    if (e.metaKey || e.ctrlKey) {
+      vscode.postMessage({ type: 'openFile', path, fileType: type });
+    }
   };
 
   const handleCopy = () => {
@@ -102,7 +104,7 @@ export function FileNameSearcher() {
                     <a
                       href="#"
                       className="file-link"
-                      onClick={() => handleOpenFile(result.relativePath, 'folder')}
+                      onClick={(e) => handleOpenFile(e, result.relativePath, 'folder')}
                     >
                       {getDisplayPath(result)}
                     </a>
@@ -118,7 +120,7 @@ export function FileNameSearcher() {
                     <a
                       href="#"
                       className={`file-link ${result.isOutside ? 'outside-file' : ''}`}
-                      onClick={() => handleOpenFile(result.relativePath, 'file')}
+                      onClick={(e) => handleOpenFile(e, result.relativePath, 'file')}
                     >
                       {getDisplayPath(result)}
                     </a>
