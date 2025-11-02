@@ -33,5 +33,9 @@ bus.subscribe((message: ToWebview) => {
   if (message.type === 'searchResults') {
     useSearchStore.getState().setResults(message.items as SearchResult[]);
     useSearchStore.getState().setLoading(false);
+  } else if (message.type === 'loadState') {
+    if (message.state.searcher) {
+      useSearchStore.setState(message.state.searcher);
+    }
   }
 });

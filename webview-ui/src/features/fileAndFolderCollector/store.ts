@@ -36,6 +36,10 @@ bus.subscribe((message: ToWebview) => {
     useCollectorStore.getState().addCollectedPaths(message.paths);
   } else if (message.type === 'updateListedPaths') {
     useCollectorStore.getState().setListedPathsGrouped(message.groupedResults);
+  } else if (message.type === 'loadState') {
+    if (message.state.collector) {
+      useCollectorStore.setState(message.state.collector);
+    }
   } else if (message.type === 'appendToListerInput') {
     const { isPrefixEnabled, prefixText } = useSettingsStore.getState();
     const collectorState = useCollectorStore.getState();

@@ -18,7 +18,9 @@ export type ToExtension =
   | { type: 'listFolderContents'; paths: string[] }
   | { type: 'openInEditor' }
   | { type: 'getSettings' }
-  | { type: 'saveSettings'; settings: { [key: string]: any } };
+  | { type: 'saveSettings'; settings: { [key: string]: any } }
+  | { type: 'saveState'; state: { [key: string]: any } }
+  | { type: 'getState' };
 
 export type SearchResult = {
   type: 'folder' | 'file';
@@ -35,4 +37,5 @@ export type ToWebview =
   | { type: 'appendToListerInput'; paths: string[] }
   | { type: 'updateListedPaths'; groupedResults: ListedGroup[] }
   | { type: 'showSettings' }
-  | { type: 'loadSettings'; settings: { [key: string]: any } };
+  | { type: 'loadSettings'; settings: { [key: string]: any } }
+  | { type: 'loadState'; state: { [key: string]: any } };

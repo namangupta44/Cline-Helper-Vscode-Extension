@@ -28,5 +28,9 @@ export const useListStore = create<State & Actions>((set) => ({
 bus.subscribe((message: ToWebview) => {
   if (message.type === 'init') {
     useListStore.getState().setFiles(message.payload.files);
+  } else if (message.type === 'loadState') {
+    if (message.state.list) {
+      useListStore.setState(message.state.list);
+    }
   }
 });

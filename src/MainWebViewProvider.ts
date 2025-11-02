@@ -27,6 +27,12 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this._extensionUri, 'webview-ui', 'dist')],
     };
+    if ('options' in webviewView) {
+      (webviewView as any).options = {
+        ...(webviewView as any).options,
+        retainContextWhenHidden: true,
+      };
+    }
 
     webviewView.webview.html = this.getHtml(webviewView.webview);
 
@@ -79,6 +85,11 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
       webview.postMessage({ type: 'loadSettings', settings });
     } else if (msg.type === 'saveSettings') {
       this._context.workspaceState.update('clineHelper.settings', msg.settings);
+    } else if (msg.type === 'getState') {
+      const state = this._context.workspaceState.get('clineHelper.state', {});
+      webview.postMessage({ type: 'loadState', state });
+    } else if (msg.type === 'saveState') {
+      this._context.workspaceState.update('clineHelper.state', msg.state);
     }
   }
 
