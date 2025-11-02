@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { MainWebViewProvider } from './MainWebViewProvider';
+import { WebviewMessageHandler } from './WebviewMessageHandler';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "cline-helper" is now active!');
@@ -29,8 +30,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
       panel.webview.html = mainProvider.getHtml(panel.webview);
+
+      const handler = new WebviewMessageHandler(context, panel.webview, false);
       panel.webview.onDidReceiveMessage((msg) => {
-        mainProvider.handleMessage(msg, panel.webview);
+        handler.handleMessage(msg);
       });
     })
   );
