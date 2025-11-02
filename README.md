@@ -1,88 +1,40 @@
-# Get Open Files, Path Collector & File Name Searcher Extension
+# Cline Helper: Supercharge Your Vibe Coding
 
-This extension provides several tools for gathering file and folder paths within VS Code, accessible via the Activity Bar and editor tabs. All collected paths are prefixed with `@/`. It also includes a tool to search for files and folders by name.
+Tired of manually copying and pasting file paths for your vibe coding sessions with tools like Cline or Roo Code? Cline Helper is here to streamline your workflow!
 
-## Features
+This VS Code extension provides a simple and powerful interface to quickly collect, search, and manage file and folder paths, making it incredibly fast and efficient to build the context you need for your AI coding assistant.
 
-### 1. List Open Files (Sidebar Panel)
+## Getting Started
 
-*   **Access:** Click the list icon (`$(list-unordered)`) in the Activity Bar on the far left. This opens the "Open Files List" panel in the sidebar.
-*   **Functionality:**
-    *   Click the "Get Open File List" button.
-    *   The text area below the button will be populated with a list of all currently open files in your editor, prefixed with `@/`.
-    *   The list is copyable directly from the text area.
-*   **Navigation:** This panel also contains a button to open the "File and Folder Collector" feature in an editor tab.
+1.  Find the **Cline Helper** icon (`$(list-unordered)`) in your VS Code activity bar.
+2.  Click it to open the sidebar.
 
-### 2. File and Folder Collector (Editor Tab)
+That's it! You're ready to go.
 
-*   **Access:**
-    *   Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P) and run "Open File and Folder Collector".
-    *   Alternatively, click the "Open File & Folder Collector" button in the sidebar panel (Feature 1).
-    *   **Functionality:**
-    *   A new editor tab titled "File and Folder Collector" opens, displaying two sections side-by-side.
-    *   **Left Section (Collect Paths):**
-        *   Drag files and/or folders from VS Code's Explorer, your operating system, **or directly from an open editor tab** onto the "Drag files or folders here" area.
-        *   The relative paths of the dropped items (prefixed with `@/`) are added to the "Collected Paths" text area below. Duplicates are automatically ignored.
-        *   Click "Copy" to copy the collected list.
-        *   Click "Clear" to reset the collected list.
-    *   **Right Section (List Folder Contents):**
-        *   Drag **folders** from VS Code's Explorer or your operating system onto the "Drag folders here to list contents" area. (Dropped files are ignored in this section).
-        *   The extension recursively finds all files within the dropped folder(s), gets their relative paths (prefixed with `@/`), and adds them to the "Listed File Paths" text area below.
-        *   If you drop multiple folders, the file lists from each drop are separated by a blank line.
-        *   Duplicate file paths across *all* drops are ignored.
-        *   Click "Copy" to copy the generated list.
-        *   Click "Clear" to reset the listed paths.
-*   **State:** The content of both text areas persists even if you switch tabs and come back.
+## Core Features
 
-### 3. File Name Searcher (Sidebar Panel)
+Cline Helper is organized into three powerful tabs:
 
-*   **Access:** Click the list icon (`$(list-unordered)`) in the Activity Bar on the far left. This opens the "Open Files List" container in the sidebar, where the "File Name Searcher" view is located.
-*   **Functionality:**
-    *   Enter a part of a file or folder name into the input box. The search will begin automatically as you type (after a brief pause).
-    *   Checkboxes for "Match Case" and "Reveal File in Explorer too" are available side-by-side below the input.
-        *   **Match Case:** Toggles case-sensitive searching (default is case-insensitive). Changing this triggers a new search.
-        *   **Reveal File in Explorer:** Toggles whether clicking a *file* path also reveals it in the Explorer (default is OFF).
-    *   The results area below displays the relative paths of all matching files and folders found within the workspace (excluding `node_modules` and `.git`).
-    *   Results are prefixed with `@/` and sorted into `--- Folders ---` and `--- Files ---` sections.
-    *   **Highlighting:** File paths that are *not* located within any of the folders found in the same search are highlighted in red.
-    *   **Clickable Paths:** You can Ctrl+Click (or Cmd+Click on Mac) on any file or folder path in the results:
-        *   Clicking a **folder** path reveals it in the VS Code Explorer sidebar.
-        *   Clicking a **file** path opens it in a new editor tab (non-preview). If the "Reveal File in Explorer" checkbox is checked, the file will *also* be revealed in the Explorer sidebar.
-    *   Click the "Copy" button to copy the entire results list (as plain text) to your clipboard.
-    *   Click the "Clear" button to clear the search input and results (the state of the checkboxes is preserved).
+### 1. Collector Tab
 
-## Code Structure
+Your central hub for gathering file paths.
 
-The extension code is organized as follows:
+*   **Collect Paths**: Drag and drop files or folders into the panel to create a custom list of paths.
+*   **List Folder Contents**: Drop a folder to recursively list every file inside it. Perfect for grabbing an entire component or module for context.
 
-*   `src/`: Contains the main TypeScript extension code.
-    *   `extension.ts`: The main activation file. It registers commands, registers the sidebar webview providers, and contains the logic for creating and managing the editor tab webview panel (`createFileAndFolderCollectorPanel`).
-    *   `listOpenFiles/`: Code specific to the "Open Files List" Sidebar Panel (Feature 1).
-        *   `ListOpenFilesWebViewProvider.ts`: Implements `vscode.WebviewViewProvider`.
-    *   `fileNameSearcher/`: Code specific to the "File Name Searcher" sidebar panel (Feature 3).
-        *   `FileNameSearcherWebViewProvider.ts`: Implements `vscode.WebviewViewProvider`.
-    *   `folderLister/`: (This directory is no longer used for the primary feature logic, but contains the `findFilesInDir` helper function called by `extension.ts`).
-*   `media/`: Contains static assets (HTML, CSS, JS) used within the webviews.
-    *   `listOpenFiles/`: Assets for the "Open Files List" Sidebar Panel (Feature 1).
-        *   `list-open-files.css`
-        *   `list-open-files.js`
-    *   `fileAndFolderCollector/`: Assets for the combined Editor Tab (Feature 2).
-        *   `fileAndFolderCollector.html`
-        *   `fileAndFolderCollector.css`
-        *   `fileAndFolderCollector.js`
-    *   `fileNameSearcher/`: Assets for the "File Name Searcher" panel (Feature 3).
-        *   `fileNameSearcher.html`
-        *   `fileNameSearcher.css`
-        *   `fileNameSearcher.js`
-*   `package.json`: The extension manifest file. Defines commands, activation events, UI contributions (Activity Bar icon, sidebar view), etc.
-*   `out/`: Compiled JavaScript output (generated via `npm run compile`).
+### 2. Searcher Tab
 
-## How It Works
+Quickly find any file or folder in your workspace with a real-time search. It even highlights related files that are outside the main folder you're looking at.
 
-*   **Sidebar (Webview Views):** Uses `WebviewViewProvider` implementations (`ListOpenFilesWebViewProvider`, `FileNameSearcherWebViewProvider`) registered for their respective view IDs in `package.json`. Providers generate HTML and handle message passing with their scripts.
-*   **Editor Tab (Webview Panel):** Uses `vscode.window.createWebviewPanel` when the `get-open-files.openFileAndFolderCollector` command is run. The panel loads HTML from `media/fileAndFolderCollector/fileAndFolderCollector.html` and uses `fileAndFolderCollector.js` for UI logic and message passing with `extension.ts`.
-*   **Communication:** Webview scripts use `acquireVsCodeApi().postMessage({...})` to send data/commands to the extension host (`extension.ts`). The extension host uses `panel.webview.postMessage({...})` or `provider._view.webview.postMessage({...})` to send data back to the webviews.
-*   **State Persistence:** The "File and Folder Collector" editor tab uses `retainContextWhenHidden: true` during panel creation. The `fileAndFolderCollector.js` script uses `vscode.getState()` on load and `vscode.setState()` on update to persist the content of both text areas across tab switches.
-*   **Folder Reading:** The `createFileAndFolderCollectorPanel` function in `extension.ts` uses the asynchronous `vscode.workspace.fs` API (`stat`, `readDirectory`) via the `findFilesInDir` helper function to recursively find files within dropped directories for the lister section.
+### 3. Open Files Tab
 
-**Enjoy!**
+Instantly get a list of all the files you currently have open in your editor. Great for when you need to share the context of your current working set.
+
+## Customization
+
+Click the **Settings** icon (`$(gear)`) to:
+*   Toggle between full and relative paths.
+*   Add custom prefixes to your file paths (e.g., `@/`).
+*   Set up `.gitignore`-style filters to exclude unwanted files and folders from your results.
+
+Spend less time gathering context and more time coding. Happy vibing!
