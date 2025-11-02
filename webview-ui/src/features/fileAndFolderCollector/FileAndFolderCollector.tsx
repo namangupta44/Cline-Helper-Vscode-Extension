@@ -89,9 +89,12 @@ export function FileAndFolderCollector() {
   const debouncedFolderInput = useDebounce(folderInputText, 500);
 
   useEffect(() => {
-    const paths = debouncedFolderInput.split('\n').filter(Boolean);
+    let paths = debouncedFolderInput.split('\n').filter(Boolean);
+    if (isPrefixEnabled && prefixText) {
+      paths = paths.map((p) => (p.startsWith(prefixText) ? p.substring(prefixText.length) : p));
+    }
     vscode.postMessage({ type: 'listFolderContents', paths });
-  }, [debouncedFolderInput]);
+  }, [debouncedFolderInput, isPrefixEnabled, prefixText]);
 
   const handleDropCollector = useCallback((uris: string[]) => {
     vscode.postMessage({ type: 'addDroppedPaths', uris });
