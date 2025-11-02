@@ -13,6 +13,7 @@ export type ToExtension =
   | { type: 'search'; query: string; matchCase: boolean }
   | { type: 'getOpenFiles' }
   | { type: 'addDroppedPaths'; uris: string[] }
+  | { type: 'addDroppedFoldersForLister'; uris: string[] }
   | { type: 'listFolderContents'; paths: string[] }
   | { type: 'openInEditor' }
   | { type: 'getSettings' }
@@ -29,6 +30,7 @@ export type ToWebview =
   | { type: 'init'; payload: { files: string[] } }
   | { type: 'searchResults'; items: SearchResult[] }
   | { type: 'updateCollectedPaths'; paths: PathInfo[] }
+  | { type: 'appendToListerInput'; paths: string[] }
   | { type: 'updateListedPaths'; groupedResults: ListedGroup[] }
   | { type: 'showSettings' }
   | { type: 'loadSettings'; settings: { [key: string]: string } };

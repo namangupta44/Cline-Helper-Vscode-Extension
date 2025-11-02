@@ -39,7 +39,11 @@ const DropZone: React.FC<{
     }
 
     const uris: string[] = [];
-    if (e.dataTransfer.items) {
+    const uriList = e.dataTransfer.getData('text/uri-list');
+
+    if (uriList) {
+      uris.push(...uriList.split('\n').map((u) => u.trim()).filter(Boolean));
+    } else if (e.dataTransfer.items) {
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         const item = e.dataTransfer.items[i];
         if (item.kind === 'string') {
@@ -48,13 +52,6 @@ const DropZone: React.FC<{
             uris.push(...data.split('\n').map((u) => u.trim()).filter(Boolean));
           }
         }
-      }
-    }
-
-    if (uris.length === 0) {
-      const uriList = e.dataTransfer.getData('text/uri-list');
-      if (uriList) {
-        uris.push(...uriList.split('\n').map((u) => u.trim()).filter(Boolean));
       }
     }
 
@@ -97,6 +94,10 @@ export function FileAndFolderCollector() {
     vscode.postMessage({ type: 'addDroppedPaths', uris });
   }, []);
 
+  const handleDropLister = useCallback((uris: string[]) => {
+    vscode.postMessage({ type: 'addDroppedFoldersForLister', uris });
+  }, []);
+
   const handleOpenFile = (path: string, type: 'file' | 'folder') => {
     vscode.postMessage({ type: 'openFile', path, fileType: type });
   };
@@ -134,7 +135,7 @@ export function FileAndFolderCollector() {
       </section>
       <section className="panel">
         <h2>List Folder Contents</h2>
-        <DropZone onDrop={() => {}}>
+        <DropZone onDrop={handleDropLister}>
           <p>Drag folders here to add, or paste paths below</p>
         </DropZone>
         <h3>Folders to List:</h3>
@@ -146,14 +147,18 @@ export function FileAndFolderCollector() {
         />
         <h3>Listed File Paths:</h3>
         <div className="results-display">
-          {listedPathsGrouped.map((group) => (
+          {listedPathsGrouped.map((group, groupIndex) => (
             <React.Fragment key={group.source}>
-              <div className="result-heading">{group.source}</div>
               {group.files.map((f) => (
-                <div key={f.path} className="file-link" onClick={() => handleOpenFile(f.path, 'file')}>
+                <div
+                  key={f.path}
+                  className="file-link"
+                  onClick={() => handleOpenFile(f.path, 'file')}
+                >
                   {f.path}
                 </div>
               ))}
+              {groupIndex < listedPathsGrouped.length - 1 && <div style={{ height: '1em' }} />}
             </React.Fragment>
           ))}
         </div>

@@ -53,6 +53,12 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
     } else if (msg.type === 'addDroppedPaths') {
       const pathInfos = await processDroppedUris(msg.uris);
       webview.postMessage({ type: 'updateCollectedPaths', paths: pathInfos });
+    } else if (msg.type === 'addDroppedFoldersForLister') {
+      const pathInfos = await processDroppedUris(msg.uris);
+      const folderPaths = pathInfos.filter((p) => p.type === 'folder').map((p) => p.path);
+      if (folderPaths.length > 0) {
+        webview.postMessage({ type: 'appendToListerInput', paths: folderPaths });
+      }
     } else if (msg.type === 'listFolderContents') {
       const excludePatterns = (settings.collectorExcludeText || '').split('\n').filter(Boolean);
       const groupedResults = await listFolderContents(msg.paths, excludePatterns);
