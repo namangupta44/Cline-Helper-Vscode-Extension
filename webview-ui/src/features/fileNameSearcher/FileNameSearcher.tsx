@@ -1,4 +1,5 @@
 import {
+  VSCodeButton,
   VSCodeCheckbox,
   VSCodeTextField,
   VSCodeProgressRing,
@@ -9,8 +10,16 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useEffect, useMemo } from 'react';
 
 export function FileNameSearcher() {
-  const { searchTerm, setSearchTerm, matchCase, setMatchCase, results, loading, setLoading } =
-    useSearchStore();
+  const {
+    searchTerm,
+    setSearchTerm,
+    matchCase,
+    setMatchCase,
+    results,
+    loading,
+    setLoading,
+    clearSearch,
+  } = useSearchStore();
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
@@ -20,6 +29,22 @@ export function FileNameSearcher() {
 
   const handleOpenFile = (path: string, type: 'file' | 'folder') => {
     vscode.postMessage({ type: 'openFile', path, fileType: type });
+  };
+
+  const handleCopy = () => {
+    let textToCopy = '';
+    if (folders.length > 0) {
+      textToCopy += 'Folders\n';
+      textToCopy += folders.map((r) => r.displayPath).join('\n');
+    }
+    if (files.length > 0) {
+      if (textToCopy.length > 0) {
+        textToCopy += '\n\n';
+      }
+      textToCopy += 'Files\n';
+      textToCopy += files.map((r) => r.displayPath).join('\n');
+    }
+    navigator.clipboard.writeText(textToCopy);
   };
 
   const { folders, files } = useMemo(() => {
@@ -40,6 +65,17 @@ export function FileNameSearcher() {
         <VSCodeCheckbox checked={matchCase} onChange={(e: any) => setMatchCase(e.target.checked)}>
           Match Case
         </VSCodeCheckbox>
+        <div className="button-group">
+          <VSCodeButton onClick={handleCopy} disabled={results.length === 0}>
+            Copy
+          </VSCodeButton>
+          <VSCodeButton
+            onClick={clearSearch}
+            disabled={results.length === 0 && searchTerm.length === 0}
+          >
+            Clear
+          </VSCodeButton>
+        </div>
       </div>
       <section className="results-container">
         {loading ? (

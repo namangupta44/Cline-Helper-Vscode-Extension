@@ -21,6 +21,7 @@ type Actions = {
   setMatchCase: (matchCase: boolean) => void;
   setResults: (results: SearchResult[]) => void;
   setLoading: (loading: boolean) => void;
+  clearSearch: () => void;
 };
 
 export const useSearchStore = create<State & Actions>((set) => ({
@@ -32,6 +33,7 @@ export const useSearchStore = create<State & Actions>((set) => ({
   setMatchCase: (matchCase) => set({ matchCase }),
   setResults: (results) => set({ results }),
   setLoading: (loading) => set({ loading }),
+  clearSearch: () => set({ searchTerm: '', results: [] }),
 }));
 
 bus.subscribe((message: ToWebview) => {
