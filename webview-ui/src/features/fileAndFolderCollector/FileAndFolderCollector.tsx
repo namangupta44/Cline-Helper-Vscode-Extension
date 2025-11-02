@@ -144,15 +144,17 @@ export function FileAndFolderCollector() {
         </DropZone>
         <h3>Collected Paths:</h3>
         <div className="results-display">
-          {collectedPaths.map((p) => (
-            <div
-              key={p.relativePath}
-              className="file-link"
-              onClick={(e) => handleOpenFile(e, p.relativePath, p.type)}
-            >
-              {getDisplayPath(p)}
-            </div>
-          ))}
+          <ul>
+            {collectedPaths.map((p) => (
+              <li
+                key={p.relativePath}
+                className="file-link"
+                onClick={(e) => handleOpenFile(e, p.relativePath, p.type)}
+              >
+                {getDisplayPath(p)}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="button-group">
           <VSCodeButton
@@ -180,20 +182,22 @@ export function FileAndFolderCollector() {
         />
         <h3>Listed File Paths:</h3>
         <div className="results-display">
-          {listedPathsGrouped.map((group, groupIndex) => (
-            <React.Fragment key={group.source}>
-              {group.files.map((f) => (
-                <div
-                  key={f.relativePath}
-                  className="file-link"
-                  onClick={(e) => handleOpenFile(e, f.relativePath, 'file')}
-                >
-                  {getDisplayPath(f)}
-                </div>
-              ))}
-              {groupIndex < listedPathsGrouped.length - 1 && <div style={{ height: '1em' }} />}
-            </React.Fragment>
-          ))}
+          <ul>
+            {listedPathsGrouped.map((group, groupIndex) => (
+              <React.Fragment key={group.source}>
+                {group.files.map((f) => (
+                  <li
+                    key={f.relativePath}
+                    className="file-link"
+                    onClick={(e) => handleOpenFile(e, f.relativePath, 'file')}
+                  >
+                    {getDisplayPath(f)}
+                  </li>
+                ))}
+                {groupIndex < listedPathsGrouped.length - 1 && <li>&nbsp;</li>}
+              </React.Fragment>
+            ))}
+          </ul>
         </div>
         <div className="button-group">
           <VSCodeButton
