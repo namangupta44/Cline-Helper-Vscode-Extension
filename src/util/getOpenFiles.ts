@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
+import ignore from 'ignore';
 
 export function getOpenFiles(
   excludePatterns: string[] = [],
   isFullPathEnabled = false
 ): { relativePath: string; fullPath: string }[] {
+  const ig = ignore().add(excludePatterns);
   const tabs: vscode.Uri[] = [];
   for (const tabGroup of vscode.window.tabGroups.all) {
     for (const tab of tabGroup.tabs) {
@@ -21,5 +23,5 @@ export function getOpenFiles(
         fullPath: uri.fsPath,
       };
     })
-    .filter((path) => !excludePatterns.some((p) => path.relativePath.startsWith(p)));
+    .filter((path) => !ig.ignores(path.relativePath));
 }

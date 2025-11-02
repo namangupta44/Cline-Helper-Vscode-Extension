@@ -78,7 +78,7 @@ export function Settings() {
           <VSCodeTextArea
             value={collectorExcludeText}
             onInput={(e: any) => setSettingsText('collectorExcludeText', e.target.value)}
-            placeholder="Enter folder paths to exclude (one per line)..."
+            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
             rows={5}
           />
         </section>
@@ -87,7 +87,7 @@ export function Settings() {
           <VSCodeTextArea
             value={searcherExcludeText}
             onInput={(e: any) => setSettingsText('searcherExcludeText', e.target.value)}
-            placeholder="Enter folder paths to exclude (one per line)..."
+            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
             rows={5}
           />
         </section>
@@ -96,7 +96,7 @@ export function Settings() {
           <VSCodeTextArea
             value={openFilesExcludeText}
             onInput={(e: any) => setSettingsText('openFilesExcludeText', e.target.value)}
-            placeholder="Enter folder paths to exclude (one per line)..."
+            placeholder="Enter patterns to exclude (.gitignore style, one per line)..."
             rows={5}
           />
         </section>

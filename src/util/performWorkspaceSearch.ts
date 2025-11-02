@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import ignore from 'ignore';
 import { SearchResult } from '../shared/messages';
 
 async function findMatchingEntriesRecursive(
@@ -8,10 +9,10 @@ async function findMatchingEntriesRecursive(
   matchCase: boolean,
   foundFolders: { relativePath: string; fullPath: string }[],
   foundFiles: { relativePath: string; fullPath: string }[],
-  excludePatterns: string[]
+  ig: ReturnType<typeof ignore>
 ): Promise<void> {
   const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
-  if (excludePatterns.some((pattern) => simpleGlobMatch(relativePathForExclusion, pattern))) {
+  if (ig.ignores(relativePathForExclusion)) {
     return;
   }
 
@@ -26,10 +27,7 @@ async function findMatchingEntriesRecursive(
     const entryUri = vscode.Uri.joinPath(dirUri, name);
     const relativePath = vscode.workspace.asRelativePath(entryUri, false);
 
-    const relativePathForExclusionCheck = vscode.workspace.asRelativePath(entryUri, true);
-    if (
-      excludePatterns.some((pattern) => simpleGlobMatch(relativePathForExclusionCheck, pattern))
-    ) {
+    if (ig.ignores(relativePath)) {
       continue;
     }
 
@@ -41,36 +39,13 @@ async function findMatchingEntriesRecursive(
       if (nameMatches) {
         foundFolders.push({ relativePath, fullPath: entryUri.fsPath });
       }
-      await findMatchingEntriesRecursive(
-        entryUri,
-        term,
-        matchCase,
-        foundFolders,
-        foundFiles,
-        excludePatterns
-      );
+      await findMatchingEntriesRecursive(entryUri, term, matchCase, foundFolders, foundFiles, ig);
     } else if (type === vscode.FileType.File) {
       if (nameMatches) {
         foundFiles.push({ relativePath, fullPath: entryUri.fsPath });
       }
     }
   }
-}
-
-function simpleGlobMatch(pathStr: string, pattern: string): boolean {
-  if (pattern.startsWith('**/') && pattern.endsWith('/**')) {
-    const dirName = pattern.substring(3, pattern.length - 3);
-    return (
-      pathStr.includes(`/${dirName}/`) ||
-      pathStr.startsWith(`${dirName}/`) ||
-      pathStr.endsWith(`/${dirName}`)
-    );
-  }
-  if (pattern.startsWith('**/')) {
-    const endPart = pattern.substring(3);
-    return pathStr.endsWith(endPart);
-  }
-  return false;
 }
 
 export async function performWorkspaceSearch(
@@ -99,10 +74,8 @@ export async function performWorkspaceSearch(
   const foundFoldersPaths: { relativePath: string; fullPath: string }[] = [];
   const foundFilesPaths: { relativePath: string; fullPath: string }[] = [];
   const baseExclude = ['**/node_modules/**', '**/.git/**'];
-  const excludePatterns = [
-    ...baseExclude,
-    ...additionalExclude.map((p) => `**/${p}/**`),
-  ];
+  const excludePatterns = [...baseExclude, ...additionalExclude];
+  const ig = ignore().add(excludePatterns);
 
   try {
     for (const folder of vscode.workspace.workspaceFolders) {
@@ -112,7 +85,7 @@ export async function performWorkspaceSearch(
         matchCase,
         foundFoldersPaths,
         foundFilesPaths,
-        excludePatterns
+        ig
       );
     }
 

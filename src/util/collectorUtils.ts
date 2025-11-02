@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import ignore from 'ignore';
 import { PathInfo, ListedGroup } from '../shared/messages';
 
 export async function processDroppedUris(
@@ -23,10 +24,10 @@ export async function processDroppedUris(
 
 async function findFilesInDir(
   dirUri: vscode.Uri,
-  excludePatterns: string[]
+  ig: ReturnType<typeof ignore>
 ): Promise<{ relativePath: string; fullPath: string }[]> {
   const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
-  if (excludePatterns.some((p) => relativePathForExclusion.startsWith(p))) {
+  if (ig.ignores(relativePathForExclusion)) {
     return [];
   }
 
@@ -35,13 +36,14 @@ async function findFilesInDir(
     const entries = await vscode.workspace.fs.readDirectory(dirUri);
     for (const [name, type] of entries) {
       const entryUri = vscode.Uri.joinPath(dirUri, name);
+      const relativePath = vscode.workspace.asRelativePath(entryUri, false);
+      if (ig.ignores(relativePath)) {
+        continue;
+      }
       if (type === vscode.FileType.Directory) {
-        files = files.concat(await findFilesInDir(entryUri, excludePatterns));
+        files = files.concat(await findFilesInDir(entryUri, ig));
       } else if (type === vscode.FileType.File) {
-        const relativePath = vscode.workspace.asRelativePath(entryUri, false);
-        if (!excludePatterns.some((p) => relativePath.startsWith(p))) {
-          files.push({ relativePath, fullPath: entryUri.fsPath });
-        }
+        files.push({ relativePath, fullPath: entryUri.fsPath });
       }
     }
   } catch (e) {
@@ -55,6 +57,7 @@ export async function listFolderContents(
   excludePatterns: string[] = [],
   isFullPathEnabled = false
 ): Promise<ListedGroup[]> {
+  const ig = ignore().add(excludePatterns);
   const listedPathsGrouped: ListedGroup[] = [];
   const listedUniquePaths = new Set<string>();
 
@@ -72,7 +75,7 @@ export async function listFolderContents(
         continue;
       }
 
-      const filesInDir = await findFilesInDir(folderUri, excludePatterns);
+      const filesInDir = await findFilesInDir(folderUri, ig);
 
       filesInDir.forEach(({ relativePath, fullPath }) => {
         if (!listedUniquePaths.has(relativePath)) {
