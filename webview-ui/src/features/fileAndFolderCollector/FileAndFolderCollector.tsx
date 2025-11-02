@@ -40,23 +40,39 @@ const DropZone: React.FC<{
       return;
     }
 
-    const uris: string[] = [];
+    const uriSet = new Set<string>();
     const uriList = e.dataTransfer.getData('text/uri-list');
 
     if (uriList) {
-      uris.push(...uriList.split('\n').map((u) => u.trim()).filter(Boolean));
-    } else if (e.dataTransfer.items) {
+      uriList
+        .split(/\r?\n/)
+        .map((u) => u.trim())
+        .filter(Boolean)
+        .forEach((u) => uriSet.add(u));
+    }
+
+    if (e.dataTransfer.items) {
+      const promises = [];
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         const item = e.dataTransfer.items[i];
         if (item.kind === 'string') {
-          const data = await new Promise<string>((resolve) => item.getAsString(resolve));
-          if (data.startsWith('file://') || data.startsWith('vscode-remote://')) {
-            uris.push(...data.split('\n').map((u) => u.trim()).filter(Boolean));
-          }
+          promises.push(new Promise<string>((resolve) => item.getAsString(resolve)));
+        }
+      }
+
+      const strings = await Promise.all(promises);
+      for (const str of strings) {
+        if (str.startsWith('file://') || str.startsWith('vscode-remote://')) {
+          str
+            .split(/\r?\n/)
+            .map((u) => u.trim())
+            .filter(Boolean)
+            .forEach((u) => uriSet.add(u));
         }
       }
     }
 
+    const uris = Array.from(uriSet);
     if (uris.length > 0) {
       onDrop(uris);
     }
