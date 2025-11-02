@@ -11,8 +11,13 @@ async function findMatchingEntriesRecursive(
   foundFiles: { relativePath: string; fullPath: string }[],
   ig: ReturnType<typeof ignore>
 ): Promise<void> {
-  const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
-  if (ig.ignores(relativePathForExclusion)) {
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(dirUri);
+  if (!workspaceFolder) {
+    return;
+  }
+  const relativePathForExclusion = path.relative(workspaceFolder.uri.fsPath, dirUri.fsPath);
+
+  if (relativePathForExclusion && ig.ignores(relativePathForExclusion)) {
     return;
   }
 

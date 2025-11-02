@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import ignore from 'ignore';
 import { PathInfo, ListedGroup } from '../shared/messages';
 
@@ -26,8 +27,13 @@ async function findFilesInDir(
   dirUri: vscode.Uri,
   ig: ReturnType<typeof ignore>
 ): Promise<{ relativePath: string; fullPath: string }[]> {
-  const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
-  if (ig.ignores(relativePathForExclusion)) {
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(dirUri);
+  if (!workspaceFolder) {
+    return [];
+  }
+  const relativePathForExclusion = path.relative(workspaceFolder.uri.fsPath, dirUri.fsPath);
+
+  if (relativePathForExclusion && ig.ignores(relativePathForExclusion)) {
     return [];
   }
 
