@@ -18,17 +18,17 @@ function App() {
   return (
     <main>
       <VSCodePanels>
-        <VSCodePanelTab id="tab-1">OPEN FILES</VSCodePanelTab>
+        <VSCodePanelTab id="tab-1">COLLECTOR</VSCodePanelTab>
         <VSCodePanelTab id="tab-2">SEARCHER</VSCodePanelTab>
-        <VSCodePanelTab id="tab-3">COLLECTOR</VSCodePanelTab>
+        <VSCodePanelTab id="tab-3">OPEN FILES</VSCodePanelTab>
         <VSCodePanelView id="view-1">
-          <ListOpenFiles />
+          <FileAndFolderCollector />
         </VSCodePanelView>
         <VSCodePanelView id="view-2">
           <FileNameSearcher />
         </VSCodePanelView>
         <VSCodePanelView id="view-3">
-          <FileAndFolderCollector />
+          <ListOpenFiles />
         </VSCodePanelView>
       </VSCodePanels>
       <Settings />
