@@ -1,4 +1,9 @@
-import { VSCodeButton, VSCodeTextArea } from '@vscode/webview-ui-toolkit/react';
+import {
+  VSCodeButton,
+  VSCodeCheckbox,
+  VSCodeTextArea,
+  VSCodeTextField,
+} from '@vscode/webview-ui-toolkit/react';
 import { useSettingsStore } from './store';
 import { vscode } from '../../platform/vscode';
 
@@ -9,7 +14,11 @@ export function Settings() {
     openFilesExcludeText,
     searcherExcludeText,
     collectorExcludeText,
+    isPrefixEnabled,
+    prefixText,
+    isFullPathEnabled,
     setSettingsText,
+    setSettingsToggle,
   } = useSettingsStore();
 
   if (!isSettingsVisible) {
@@ -23,6 +32,9 @@ export function Settings() {
         openFilesExcludeText,
         searcherExcludeText,
         collectorExcludeText,
+        isPrefixEnabled,
+        prefixText,
+        isFullPathEnabled,
       },
     });
     hideSettings();
@@ -38,6 +50,29 @@ export function Settings() {
             Cancel
           </VSCodeButton>
         </div>
+        <section>
+          <h3>General</h3>
+          <VSCodeCheckbox
+            checked={isFullPathEnabled}
+            onChange={(e: any) => setSettingsToggle('isFullPathEnabled', e.target.checked)}
+          >
+            Show Full Path
+          </VSCodeCheckbox>
+          <div className="prefix-container">
+            <VSCodeCheckbox
+              checked={isPrefixEnabled}
+              onChange={(e: any) => setSettingsToggle('isPrefixEnabled', e.target.checked)}
+            >
+              Add Prefix
+            </VSCodeCheckbox>
+            <VSCodeTextField
+              value={prefixText}
+              onInput={(e: any) => setSettingsText('prefixText', e.target.value)}
+              placeholder="Enter prefix..."
+              disabled={!isPrefixEnabled}
+            />
+          </div>
+        </section>
         <section>
           <h3>Exclude from COLLECTOR</h3>
           <VSCodeTextArea

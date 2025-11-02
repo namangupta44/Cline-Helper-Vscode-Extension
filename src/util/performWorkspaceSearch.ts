@@ -6,8 +6,8 @@ async function findMatchingEntriesRecursive(
   dirUri: vscode.Uri,
   term: string,
   matchCase: boolean,
-  foundFolders: string[],
-  foundFiles: string[],
+  foundFolders: { relativePath: string; fullPath: string }[],
+  foundFiles: { relativePath: string; fullPath: string }[],
   excludePatterns: string[]
 ): Promise<void> {
   const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
@@ -39,7 +39,7 @@ async function findMatchingEntriesRecursive(
 
     if (type === vscode.FileType.Directory) {
       if (nameMatches) {
-        foundFolders.push(relativePath);
+        foundFolders.push({ relativePath, fullPath: entryUri.fsPath });
       }
       await findMatchingEntriesRecursive(
         entryUri,
@@ -51,7 +51,7 @@ async function findMatchingEntriesRecursive(
       );
     } else if (type === vscode.FileType.File) {
       if (nameMatches) {
-        foundFiles.push(relativePath);
+        foundFiles.push({ relativePath, fullPath: entryUri.fsPath });
       }
     }
   }
@@ -76,7 +76,8 @@ function simpleGlobMatch(pathStr: string, pattern: string): boolean {
 export async function performWorkspaceSearch(
   term: string,
   matchCase: boolean,
-  additionalExclude: string[] = []
+  additionalExclude: string[] = [],
+  isFullPathEnabled = false
 ): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
 
@@ -85,6 +86,7 @@ export async function performWorkspaceSearch(
       type: 'file',
       displayPath: 'No workspace open.',
       relativePath: '',
+      fullPath: '',
       isOutside: false,
     });
     return results;
@@ -94,8 +96,8 @@ export async function performWorkspaceSearch(
     return [];
   }
 
-  const foundFoldersPaths: string[] = [];
-  const foundFilesPaths: string[] = [];
+  const foundFoldersPaths: { relativePath: string; fullPath: string }[] = [];
+  const foundFilesPaths: { relativePath: string; fullPath: string }[] = [];
   const baseExclude = ['**/node_modules/**', '**/.git/**'];
   const excludePatterns = [
     ...baseExclude,
@@ -114,23 +116,26 @@ export async function performWorkspaceSearch(
       );
     }
 
-    foundFoldersPaths.forEach((relativePath) => {
+    foundFoldersPaths.forEach(({ relativePath, fullPath }) => {
       results.push({
         type: 'folder',
-        displayPath: `${relativePath.replace(/\\/g, '/')}`,
+        displayPath: isFullPathEnabled ? fullPath : `${relativePath.replace(/\\/g, '/')}`,
         relativePath: relativePath,
+        fullPath: fullPath,
       });
     });
 
-    foundFilesPaths.forEach((relativePath) => {
+    foundFilesPaths.forEach(({ relativePath, fullPath }) => {
       const isOutside = !foundFoldersPaths.some(
-        (folderPath) =>
-          relativePath.startsWith(folderPath + path.sep) || relativePath.startsWith(folderPath + '/')
+        (folder) =>
+          relativePath.startsWith(folder.relativePath + path.sep) ||
+          relativePath.startsWith(folder.relativePath + '/')
       );
       results.push({
         type: 'file',
-        displayPath: `${relativePath.replace(/\\/g, '/')}`,
+        displayPath: isFullPathEnabled ? fullPath : `${relativePath.replace(/\\/g, '/')}`,
         relativePath: relativePath,
+        fullPath: fullPath,
         isOutside: isOutside,
       });
     });
@@ -147,6 +152,7 @@ export async function performWorkspaceSearch(
         type: 'file',
         displayPath: 'No matching files or folders found.',
         relativePath: '',
+        fullPath: '',
         isOutside: false,
       });
     }
@@ -160,6 +166,7 @@ export async function performWorkspaceSearch(
         type: 'file',
         displayPath: 'Error during search.',
         relativePath: '',
+        fullPath: '',
         isOutside: false,
       },
     ];

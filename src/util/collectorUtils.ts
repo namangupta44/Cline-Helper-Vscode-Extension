@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
 import { PathInfo, ListedGroup } from '../shared/messages';
 
-export async function processDroppedUris(uriStrings: string[]): Promise<PathInfo[]> {
+export async function processDroppedUris(
+  uriStrings: string[],
+  isFullPathEnabled = false
+): Promise<PathInfo[]> {
   const pathInfos: PathInfo[] = [];
   for (const uriString of uriStrings) {
     try {
@@ -10,7 +13,7 @@ export async function processDroppedUris(uriStrings: string[]): Promise<PathInfo
       const stats = await vscode.workspace.fs.stat(uri);
       const type: 'file' | 'folder' =
         stats.type === vscode.FileType.Directory ? 'folder' : 'file';
-      pathInfos.push({ path: relativePath, type });
+      pathInfos.push({ relativePath, fullPath: uri.fsPath, type });
     } catch (e) {
       console.error(`Collector: Error parsing/statting URI: ${uriString}`, e);
     }
@@ -21,13 +24,13 @@ export async function processDroppedUris(uriStrings: string[]): Promise<PathInfo
 async function findFilesInDir(
   dirUri: vscode.Uri,
   excludePatterns: string[]
-): Promise<vscode.Uri[]> {
+): Promise<{ relativePath: string; fullPath: string }[]> {
   const relativePathForExclusion = vscode.workspace.asRelativePath(dirUri, true);
   if (excludePatterns.some((p) => relativePathForExclusion.startsWith(p))) {
     return [];
   }
 
-  let files: vscode.Uri[] = [];
+  let files: { relativePath: string; fullPath: string }[] = [];
   try {
     const entries = await vscode.workspace.fs.readDirectory(dirUri);
     for (const [name, type] of entries) {
@@ -37,7 +40,7 @@ async function findFilesInDir(
       } else if (type === vscode.FileType.File) {
         const relativePath = vscode.workspace.asRelativePath(entryUri, false);
         if (!excludePatterns.some((p) => relativePath.startsWith(p))) {
-          files.push(entryUri);
+          files.push({ relativePath, fullPath: entryUri.fsPath });
         }
       }
     }
@@ -49,7 +52,8 @@ async function findFilesInDir(
 
 export async function listFolderContents(
   folderPaths: string[],
-  excludePatterns: string[] = []
+  excludePatterns: string[] = [],
+  isFullPathEnabled = false
 ): Promise<ListedGroup[]> {
   const listedPathsGrouped: ListedGroup[] = [];
   const listedUniquePaths = new Set<string>();
@@ -70,11 +74,14 @@ export async function listFolderContents(
 
       const filesInDir = await findFilesInDir(folderUri, excludePatterns);
 
-      filesInDir.forEach((fileUri) => {
-        const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+      filesInDir.forEach(({ relativePath, fullPath }) => {
         if (!listedUniquePaths.has(relativePath)) {
           listedUniquePaths.add(relativePath);
-          currentGroupFiles.push({ path: relativePath, type: 'file' });
+          currentGroupFiles.push({
+            relativePath,
+            fullPath,
+            type: 'file',
+          });
         }
       });
 

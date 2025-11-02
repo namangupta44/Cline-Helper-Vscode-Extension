@@ -1,13 +1,6 @@
 import { create } from 'zustand';
-import { ToWebview } from '@shared/messages';
+import { ToWebview, SearchResult } from '@shared/messages';
 import { bus } from '../../platform/bus';
-
-type SearchResult = {
-  type: 'folder' | 'file';
-  displayPath: string;
-  relativePath: string;
-  isOutside?: boolean;
-};
 
 type State = {
   searchTerm: string;

@@ -4,6 +4,8 @@ import { vscode } from '../../platform/vscode';
 import React, { DragEvent, useState, useCallback } from 'react';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useEffect } from 'react';
+import { useSettingsStore } from '../settings/store';
+import { PathInfo } from '@shared/messages';
 
 const DropZone: React.FC<{
   onDrop: (uris: string[]) => void;
@@ -82,6 +84,7 @@ export function FileAndFolderCollector() {
     clearCollector,
     clearLister,
   } = useCollectorStore();
+  const { isFullPathEnabled, isPrefixEnabled, prefixText } = useSettingsStore();
 
   const debouncedFolderInput = useDebounce(folderInputText, 500);
 
@@ -97,6 +100,11 @@ export function FileAndFolderCollector() {
   const handleDropLister = useCallback((uris: string[]) => {
     vscode.postMessage({ type: 'addDroppedFoldersForLister', uris });
   }, []);
+
+  const getDisplayPath = (p: PathInfo) => {
+    const path = isFullPathEnabled ? p.fullPath : p.relativePath;
+    return isPrefixEnabled ? `${prefixText}${path}` : path;
+  };
 
   const handleOpenFile = (path: string, type: 'file' | 'folder') => {
     vscode.postMessage({ type: 'openFile', path, fileType: type });
@@ -116,14 +124,18 @@ export function FileAndFolderCollector() {
         <h3>Collected Paths:</h3>
         <div className="results-display">
           {collectedPaths.map((p) => (
-            <div key={p.path} className="file-link" onClick={() => handleOpenFile(p.path, p.type)}>
-              {p.path}
+            <div
+              key={p.relativePath}
+              className="file-link"
+              onClick={() => handleOpenFile(p.relativePath, p.type)}
+            >
+              {getDisplayPath(p)}
             </div>
           ))}
         </div>
         <div className="button-group">
           <VSCodeButton
-            onClick={() => handleCopy(collectedPaths.map((p) => p.path).join('\n'))}
+            onClick={() => handleCopy(collectedPaths.map(getDisplayPath).join('\n'))}
             disabled={collectedPaths.length === 0}
           >
             Copy
@@ -151,11 +163,11 @@ export function FileAndFolderCollector() {
             <React.Fragment key={group.source}>
               {group.files.map((f) => (
                 <div
-                  key={f.path}
+                  key={f.relativePath}
                   className="file-link"
-                  onClick={() => handleOpenFile(f.path, 'file')}
+                  onClick={() => handleOpenFile(f.relativePath, 'file')}
                 >
-                  {f.path}
+                  {getDisplayPath(f)}
                 </div>
               ))}
               {groupIndex < listedPathsGrouped.length - 1 && <div style={{ height: '1em' }} />}
@@ -167,7 +179,7 @@ export function FileAndFolderCollector() {
             onClick={() =>
               handleCopy(
                 listedPathsGrouped
-                  .map((g) => g.files.map((f) => f.path).join('\n'))
+                  .map((g) => g.files.map(getDisplayPath).join('\n'))
                   .join('\n\n')
               )
             }

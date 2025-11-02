@@ -8,6 +8,8 @@ import { useSearchStore } from './store';
 import { vscode } from '../../platform/vscode';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useEffect, useMemo } from 'react';
+import { useSettingsStore } from '../settings/store';
+import { SearchResult } from '@shared/messages';
 
 export function FileNameSearcher() {
   const {
@@ -20,12 +22,18 @@ export function FileNameSearcher() {
     setLoading,
     clearSearch,
   } = useSearchStore();
+  const { isFullPathEnabled, isPrefixEnabled, prefixText } = useSettingsStore();
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     setLoading(true);
     vscode.postMessage({ type: 'search', query: debouncedSearchTerm, matchCase });
   }, [debouncedSearchTerm, matchCase, setLoading]);
+
+  const getDisplayPath = (r: SearchResult) => {
+    const path = isFullPathEnabled ? r.fullPath : r.relativePath;
+    return isPrefixEnabled ? `${prefixText}${path}` : path;
+  };
 
   const handleOpenFile = (path: string, type: 'file' | 'folder') => {
     vscode.postMessage({ type: 'openFile', path, fileType: type });
@@ -35,14 +43,14 @@ export function FileNameSearcher() {
     let textToCopy = '';
     if (folders.length > 0) {
       textToCopy += 'Folders\n';
-      textToCopy += folders.map((r) => r.displayPath).join('\n');
+      textToCopy += folders.map(getDisplayPath).join('\n');
     }
     if (files.length > 0) {
       if (textToCopy.length > 0) {
         textToCopy += '\n\n';
       }
       textToCopy += 'Files\n';
-      textToCopy += files.map((r) => r.displayPath).join('\n');
+      textToCopy += files.map(getDisplayPath).join('\n');
     }
     navigator.clipboard.writeText(textToCopy);
   };
@@ -96,7 +104,7 @@ export function FileNameSearcher() {
                       className="file-link"
                       onClick={() => handleOpenFile(result.relativePath, 'folder')}
                     >
-                      {result.displayPath}
+                      {getDisplayPath(result)}
                     </a>
                   </li>
                 ))}
@@ -112,7 +120,7 @@ export function FileNameSearcher() {
                       className={`file-link ${result.isOutside ? 'outside-file' : ''}`}
                       onClick={() => handleOpenFile(result.relativePath, 'file')}
                     >
-                      {result.displayPath}
+                      {getDisplayPath(result)}
                     </a>
                   </li>
                 ))}

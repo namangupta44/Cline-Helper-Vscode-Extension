@@ -37,31 +37,40 @@ export class MainWebViewProvider implements vscode.WebviewViewProvider {
 
   public async handleMessage(msg: ToExtension, webview: vscode.Webview) {
     const settings = this._context.workspaceState.get('clineHelper.settings', {}) as {
-      [key: string]: string;
+      [key: string]: any;
     };
 
     if (msg.type === 'getOpenFiles') {
       const excludePatterns = (settings.openFilesExcludeText || '').split('\n').filter(Boolean);
-      const files = getOpenFiles(excludePatterns);
+      const files = getOpenFiles(excludePatterns, settings.isFullPathEnabled);
       webview.postMessage({ type: 'init', payload: { files } });
     } else if (msg.type === 'openFile') {
       openPath(msg.path, msg.fileType);
     } else if (msg.type === 'search') {
       const excludePatterns = (settings.searcherExcludeText || '').split('\n').filter(Boolean);
-      const results = await performWorkspaceSearch(msg.query, msg.matchCase, excludePatterns);
+      const results = await performWorkspaceSearch(
+        msg.query,
+        msg.matchCase,
+        excludePatterns,
+        settings.isFullPathEnabled
+      );
       webview.postMessage({ type: 'searchResults', items: results });
     } else if (msg.type === 'addDroppedPaths') {
-      const pathInfos = await processDroppedUris(msg.uris);
+      const pathInfos = await processDroppedUris(msg.uris, settings.isFullPathEnabled);
       webview.postMessage({ type: 'updateCollectedPaths', paths: pathInfos });
     } else if (msg.type === 'addDroppedFoldersForLister') {
-      const pathInfos = await processDroppedUris(msg.uris);
-      const folderPaths = pathInfos.filter((p) => p.type === 'folder').map((p) => p.path);
+      const pathInfos = await processDroppedUris(msg.uris, settings.isFullPathEnabled);
+      const folderPaths = pathInfos.filter((p) => p.type === 'folder').map((p) => p.relativePath);
       if (folderPaths.length > 0) {
         webview.postMessage({ type: 'appendToListerInput', paths: folderPaths });
       }
     } else if (msg.type === 'listFolderContents') {
       const excludePatterns = (settings.collectorExcludeText || '').split('\n').filter(Boolean);
-      const groupedResults = await listFolderContents(msg.paths, excludePatterns);
+      const groupedResults = await listFolderContents(
+        msg.paths,
+        excludePatterns,
+        settings.isFullPathEnabled
+      );
       webview.postMessage({ type: 'updateListedPaths', groupedResults });
     } else if (msg.type === 'openInEditor') {
       vscode.commands.executeCommand('cline-helper.openInEditor');

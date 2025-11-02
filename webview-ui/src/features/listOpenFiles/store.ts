@@ -2,13 +2,18 @@ import { create } from 'zustand';
 import { ToWebview } from '@shared/messages';
 import { bus } from '../../platform/bus';
 
+type FileInfo = {
+  relativePath: string;
+  fullPath: string;
+};
+
 type State = {
-  files: string[];
+  files: FileInfo[];
   loading: boolean;
 };
 
 type Actions = {
-  setFiles: (files: string[]) => void;
+  setFiles: (files: FileInfo[]) => void;
   clearFiles: () => void;
 };
 

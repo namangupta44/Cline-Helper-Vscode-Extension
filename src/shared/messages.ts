@@ -1,5 +1,6 @@
 export type PathInfo = {
-  path: string;
+  relativePath: string;
+  fullPath: string;
   type: 'file' | 'folder';
 };
 
@@ -17,20 +18,21 @@ export type ToExtension =
   | { type: 'listFolderContents'; paths: string[] }
   | { type: 'openInEditor' }
   | { type: 'getSettings' }
-  | { type: 'saveSettings'; settings: { [key: string]: string } };
+  | { type: 'saveSettings'; settings: { [key: string]: any } };
 
 export type SearchResult = {
   type: 'folder' | 'file';
   displayPath: string;
   relativePath: string;
+  fullPath: string;
   isOutside?: boolean;
 };
 
 export type ToWebview =
-  | { type: 'init'; payload: { files: string[] } }
+  | { type: 'init'; payload: { files: { relativePath: string; fullPath: string }[] } }
   | { type: 'searchResults'; items: SearchResult[] }
   | { type: 'updateCollectedPaths'; paths: PathInfo[] }
   | { type: 'appendToListerInput'; paths: string[] }
   | { type: 'updateListedPaths'; groupedResults: ListedGroup[] }
   | { type: 'showSettings' }
-  | { type: 'loadSettings'; settings: { [key: string]: string } };
+  | { type: 'loadSettings'; settings: { [key: string]: any } };

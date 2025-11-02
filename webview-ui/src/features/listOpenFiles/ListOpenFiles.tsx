@@ -2,18 +2,25 @@ import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { useListStore } from './store';
 import { vscode } from '../../platform/vscode';
 import { MouseEvent } from 'react';
+import { useSettingsStore } from '../settings/store';
 
 export function ListOpenFiles() {
   const { files, clearFiles } = useListStore();
+  const { isFullPathEnabled, isPrefixEnabled, prefixText } = useSettingsStore();
 
-  const handleOpenFile = (e: MouseEvent<HTMLSpanElement>, file: string) => {
+  const getDisplayPath = (file: { relativePath: string; fullPath: string }) => {
+    const path = isFullPathEnabled ? file.fullPath : file.relativePath;
+    return isPrefixEnabled ? `${prefixText}${path}` : path;
+  };
+
+  const handleOpenFile = (e: MouseEvent<HTMLSpanElement>, file: { relativePath: string }) => {
     if (e.metaKey) {
-      vscode.postMessage({ type: 'openFile', path: file, fileType: 'file' });
+      vscode.postMessage({ type: 'openFile', path: file.relativePath, fileType: 'file' });
     }
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(files.join('\n'));
+    navigator.clipboard.writeText(files.map(getDisplayPath).join('\n'));
   };
 
   return (
@@ -36,13 +43,13 @@ export function ListOpenFiles() {
         ) : (
           <ul>
             {files.map((file) => (
-              <li key={file}>
+              <li key={file.relativePath}>
                 <span
                   className="file-link"
                   onClick={(e) => handleOpenFile(e, file)}
                   draggable="false"
                 >
-                  {file}
+                  {getDisplayPath(file)}
                 </span>
               </li>
             ))}
