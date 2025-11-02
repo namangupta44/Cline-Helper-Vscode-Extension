@@ -78,9 +78,9 @@ h1 {
 
 .collector-container {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   height: 100vh;
-  padding: 0.5rem;
+  padding: 0.25rem;
   box-sizing: border-box;
 }
 
@@ -88,8 +88,20 @@ h1 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   min-width: 0;
+}
+
+.panel h2 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.panel h3 {
+  font-size: 1em;
+  font-weight: 500;
+  margin: 0.25rem 0;
 }
 
 .drop-zone {
