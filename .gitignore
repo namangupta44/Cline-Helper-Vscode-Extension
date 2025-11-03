@@ -115,3 +115,6 @@ dist/
 
 # VS Code extension specific
 *.vsix
+
+# macOS
+.DS_Store
