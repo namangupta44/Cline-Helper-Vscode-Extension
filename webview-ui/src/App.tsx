@@ -37,6 +37,7 @@ function App() {
       },
       list: {
         files: listState.files,
+        isOrganized: listState.isOrganized,
       },
     };
     vscode.postMessage({ type: 'saveState', state });

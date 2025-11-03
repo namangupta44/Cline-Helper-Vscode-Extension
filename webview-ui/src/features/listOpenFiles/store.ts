@@ -9,19 +9,29 @@ type FileInfo = {
 
 type State = {
   files: FileInfo[];
+  organizedFiles: FileInfo[];
   loading: boolean;
+  isOrganized: boolean;
 };
 
 type Actions = {
   setFiles: (files: FileInfo[]) => void;
   clearFiles: () => void;
+  setOrganized: (isOrganized: boolean) => void;
 };
 
 export const useListStore = create<State & Actions>((set) => ({
   files: [],
+  organizedFiles: [],
   loading: false,
-  setFiles: (files) => set({ files }),
-  clearFiles: () => set({ files: [] }),
+  isOrganized: false,
+  setFiles: (files) =>
+    set({
+      files,
+      organizedFiles: [...files].sort((a, b) => a.relativePath.localeCompare(b.relativePath)),
+    }),
+  clearFiles: () => set({ files: [], organizedFiles: [] }),
+  setOrganized: (isOrganized) => set({ isOrganized }),
 }));
 
 // Listen for messages from the extension
@@ -30,7 +40,12 @@ bus.subscribe((message: ToWebview) => {
     useListStore.getState().setFiles(message.payload.files);
   } else if (message.type === 'loadState') {
     if (message.state.list) {
-      useListStore.setState(message.state.list);
+      const { files, isOrganized } = message.state.list;
+      useListStore.setState({
+        files,
+        isOrganized,
+        organizedFiles: [...files].sort((a, b) => a.relativePath.localeCompare(b.relativePath)),
+      });
     }
   }
 });

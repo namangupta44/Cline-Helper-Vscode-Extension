@@ -1,12 +1,14 @@
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeButton, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import { useListStore } from './store';
 import { vscode } from '../../platform/vscode';
 import { MouseEvent } from 'react';
 import { useSettingsStore } from '../settings/store';
 
 export function ListOpenFiles() {
-  const { files, clearFiles } = useListStore();
+  const { files, organizedFiles, isOrganized, setOrganized, clearFiles } = useListStore();
   const { isFullPathEnabled, isPrefixEnabled, prefixText } = useSettingsStore();
+
+  const filesToDisplay = isOrganized ? organizedFiles : files;
 
   const getDisplayPath = (file: { relativePath: string; fullPath: string }) => {
     const path = isFullPathEnabled ? file.fullPath : file.relativePath;
@@ -20,29 +22,42 @@ export function ListOpenFiles() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(files.map(getDisplayPath).join('\n'));
+    navigator.clipboard.writeText(filesToDisplay.map(getDisplayPath).join('\n'));
   };
 
   return (
     <main className="openfiles-container">
       <h1>Open Files</h1>
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <VSCodeButton onClick={() => vscode.postMessage({ type: 'getOpenFiles' })}>
-          Get Open Files
-        </VSCodeButton>
-        <VSCodeButton onClick={handleCopy} disabled={files.length === 0}>
-          Copy
-        </VSCodeButton>
-        <VSCodeButton onClick={clearFiles} disabled={files.length === 0}>
-          Clear
-        </VSCodeButton>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <VSCodeButton
+            onClick={() => vscode.postMessage({ type: 'getOpenFiles' })}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            Get Open Files
+          </VSCodeButton>
+          <VSCodeButton onClick={handleCopy} disabled={filesToDisplay.length === 0}>
+            Copy
+          </VSCodeButton>
+          <VSCodeButton onClick={clearFiles} disabled={filesToDisplay.length === 0}>
+            Clear
+          </VSCodeButton>
+        </div>
+        <div>
+          <VSCodeCheckbox
+            checked={isOrganized}
+            onChange={(e: any) => setOrganized(e.target.checked)}
+          >
+            Organized
+          </VSCodeCheckbox>
+        </div>
       </div>
       <section className="results-container">
-        {files.length === 0 ? (
+        {filesToDisplay.length === 0 ? (
           <p>No open files found.</p>
         ) : (
           <ul>
-            {files.map((file) => (
+            {filesToDisplay.map((file) => (
               <li key={file.relativePath}>
                 <span
                   className="file-link"
