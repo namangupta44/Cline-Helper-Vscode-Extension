@@ -12,11 +12,13 @@ import { vscode } from './platform/vscode';
 import { useCollectorStore } from './features/fileAndFolderCollector/store';
 import { useSearchStore } from './features/fileNameSearcher/store';
 import { useListStore } from './features/listOpenFiles/store';
+import { useAppStore } from './features/app/store';
 
 function App() {
   const collectorState = useCollectorStore();
   const searcherState = useSearchStore();
   const listState = useListStore();
+  const appState = useAppStore();
 
   useEffect(() => {
     vscode.postMessage({ type: 'getSettings' });
@@ -25,6 +27,9 @@ function App() {
 
   useEffect(() => {
     const state = {
+      app: {
+        activeTabId: appState.activeTabId,
+      },
       collector: {
         collectedPaths: collectorState.collectedPaths,
         folderInputText: collectorState.folderInputText,
@@ -41,11 +46,14 @@ function App() {
       },
     };
     vscode.postMessage({ type: 'saveState', state });
-  }, [collectorState, searcherState, listState]);
+  }, [collectorState, searcherState, listState, appState]);
 
   return (
     <main>
-      <VSCodePanels>
+      <VSCodePanels
+        activeid={appState.activeTabId}
+        onChange={(e: any) => appState.setActiveTabId(e.target.activeid)}
+      >
         <VSCodePanelTab id="tab-1">COLLECTOR</VSCodePanelTab>
         <VSCodePanelTab id="tab-2">SEARCHER</VSCodePanelTab>
         <VSCodePanelTab id="tab-3">OPEN FILES</VSCodePanelTab>

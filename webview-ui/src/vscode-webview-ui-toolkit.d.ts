@@ -24,7 +24,12 @@ declare module '@vscode/webview-ui-toolkit/react' {
 
   export const VSCodeProgressRing: React.FC<React.HTMLAttributes<HTMLDivElement>>;
 
-  export const VSCodePanels: React.FC<React.HTMLAttributes<HTMLDivElement>>;
+  export const VSCodePanels: React.FC<
+    React.HTMLAttributes<HTMLDivElement> & {
+      activeid?: string;
+      onChange?: (e: any) => void;
+    }
+  >;
   export const VSCodePanelTab: React.FC<React.HTMLAttributes<HTMLDivElement> & { id: string }>;
   export const VSCodePanelView: React.FC<React.HTMLAttributes<HTMLDivElement> & { id: string }>;
 }
