@@ -133,6 +133,7 @@ h1 {
   border: 1px solid var(--vscode-editorGroup-border);
   border-radius: 4px;
   padding: 0.5rem;
+  min-height: 5rem;
 }
 
 .button-group {
