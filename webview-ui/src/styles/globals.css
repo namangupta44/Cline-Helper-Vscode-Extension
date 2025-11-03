@@ -32,9 +32,8 @@ span[style*="cursor: pointer"] {
   display: block;
 }
 
-vscode-textarea::part(control),
-vscode-text-field::part(control) {
-  white-space: nowrap;
+.no-wrap-textarea::part(control) {
+  white-space: pre;
   overflow-x: auto;
 }
 

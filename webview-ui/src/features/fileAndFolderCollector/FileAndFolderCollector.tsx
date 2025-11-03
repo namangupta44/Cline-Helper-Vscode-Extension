@@ -176,6 +176,7 @@ export function FileAndFolderCollector() {
         </DropZone>
         <h3>Folders to List:</h3>
         <VSCodeTextArea
+          className="no-wrap-textarea"
           value={folderInputText}
           onInput={(e: any) => setFolderInputText(e.target.value)}
           placeholder="Enter folder paths here..."
