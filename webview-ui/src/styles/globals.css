@@ -11,6 +11,8 @@ body {
 ul {
   padding-left: 2em;
   margin: 0;
+  display: inline-block;
+  min-width: 100%;
 }
 
 a,
@@ -26,6 +28,14 @@ span[style*="cursor: pointer"] {
   color: var(--vscode-sideBar-foreground);
   text-decoration: none;
   cursor: text;
+  white-space: nowrap;
+  display: block;
+}
+
+vscode-textarea::part(control),
+vscode-text-field::part(control) {
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
 .file-link:hover {
@@ -120,7 +130,7 @@ h1 {
 
 .results-display {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow: auto;
   border: 1px solid var(--vscode-editorGroup-border);
   border-radius: 4px;
   padding: 0.5rem;

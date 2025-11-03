@@ -146,12 +146,13 @@ export function FileAndFolderCollector() {
         <div className="results-display">
           <ul>
             {collectedPaths.map((p) => (
-              <li
-                key={p.relativePath}
-                className="file-link"
-                onClick={(e) => handleOpenFile(e, p.relativePath, p.type)}
-              >
-                {getDisplayPath(p)}
+              <li key={p.relativePath}>
+                <span
+                  className="file-link"
+                  onClick={(e) => handleOpenFile(e, p.relativePath, p.type)}
+                >
+                  {getDisplayPath(p)}
+                </span>
               </li>
             ))}
           </ul>
@@ -186,12 +187,13 @@ export function FileAndFolderCollector() {
             {listedPathsGrouped.map((group, groupIndex) => (
               <React.Fragment key={group.source}>
                 {group.files.map((f) => (
-                  <li
-                    key={f.relativePath}
-                    className="file-link"
-                    onClick={(e) => handleOpenFile(e, f.relativePath, 'file')}
-                  >
-                    {getDisplayPath(f)}
+                  <li key={f.relativePath}>
+                    <span
+                      className="file-link"
+                      onClick={(e) => handleOpenFile(e, f.relativePath, 'file')}
+                    >
+                      {getDisplayPath(f)}
+                    </span>
                   </li>
                 ))}
                 {groupIndex < listedPathsGrouped.length - 1 && <li>&nbsp;</li>}
