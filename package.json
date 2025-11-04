@@ -3,7 +3,7 @@
   "displayName": "Cline Helper",
   "publisher": "namangupta",
   "version": "1.1.0",
-  "description": "Helpful commands/utilities for Cline.",
+  "description": "A smart file context builder for AI vibe coding with Cline or RooCode.",
   "engines": {
     "vscode": "^1.99.0"
   },

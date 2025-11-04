@@ -1,5 +1,7 @@
 # Cline Helper: Supercharge Your Vibe Coding
 
+![Demo](media/demo.gif)
+
 Tired of manually copying and pasting file paths for your vibe coding sessions with tools like Cline or Roo Code? Cline Helper is here to streamline your workflow!
 
 This VS Code extension provides a simple and powerful interface to quickly collect, search, and manage file and folder paths, making it incredibly fast and efficient to build the context you need for your AI coding assistant.
